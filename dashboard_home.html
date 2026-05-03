@@ -1,0 +1,2247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KATALYST</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%230b0e18'/><text x='50%25' y='50%25' dominant-baseline='central' text-anchor='middle' font-family='Outfit,system-ui,sans-serif' font-weight='800' font-size='20' fill='%239b8dff'>K</text></svg>">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Outfit:wght@400;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#0e1117;--bg2:#151b26;--bg3:#1c2436;--bg4:#222d42;--bd:#252f45;--bd2:#2e3a55;--pu:#7c6af7;--pu2:#9b8dff;--bl:#4b9eff;--bl2:#7ab8ff;--gr:#3dd68c;--gr2:#6eeaac;--re:#f05252;--or:#f5a623;--tx:#e2e8f4;--tx2:#8892a4;--tx3:#4a5568;--sb:64px}
+html,body{height:100%;overflow-x:hidden}
+body{background:var(--bg);font-family:"IBM Plex Mono",monospace;color:var(--tx);display:flex;min-height:100vh}
+::-webkit-scrollbar{width:4px;height:4px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:var(--bd2);border-radius:2px}
+/* SIDEBAR */
+.sidebar{position:fixed;top:0;left:0;bottom:0;width:var(--sb);background:#0b0e18;border-right:1px solid var(--bd);display:flex;flex-direction:column;align-items:center;justify-content:space-between;padding:18px 0 20px;z-index:500}
+.sb-logo{width:38px;height:38px;border-radius:10px;background:rgba(124,106,247,.15);border:1px solid rgba(124,106,247,.3);display:flex;align-items:center;justify-content:center;font-family:"Outfit",sans-serif;font-size:15px;font-weight:800;color:var(--pu2);margin-bottom:26px}
+.sb-nav{display:flex;flex-direction:column;align-items:center;gap:2px;width:100%}
+.sbi{width:100%;display:flex;flex-direction:column;align-items:center;gap:5px;padding:12px 0;cursor:pointer;border-left:2px solid transparent;transition:all .15s}
+.sbi:hover{background:rgba(255,255,255,.02)}.sbi:hover .sbico{color:var(--tx)}
+.sbi.on{border-left:2px solid var(--pu);background:rgba(124,106,247,.06)}
+.sbi.on .sbico{color:var(--pu2)}.sbi.on .sblbl{color:var(--pu2)}
+.sbico{width:20px;height:20px;color:var(--tx3)}.sblbl{font-size:8px;color:var(--tx3);letter-spacing:1.5px;text-transform:uppercase}
+.sb-bot{display:flex;flex-direction:column;align-items:center;gap:5px}
+.sb-dot{width:7px;height:7px;border-radius:50%;background:var(--gr);transition:background .3s}
+.sb-st{font-size:8px;color:var(--tx3);letter-spacing:1px;transition:color .3s}
+/* MOBILE BOTTOM NAV */
+.mob-nav{display:none;position:fixed;bottom:0;left:0;right:0;height:60px;background:#0b0e18;border-top:1px solid var(--bd);z-index:500;flex-direction:row;align-items:center;justify-content:space-around}
+.mob-nav-item{display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;padding:8px 20px;flex:1}
+.mob-nav-item.on .mnbico{color:var(--pu2)}.mob-nav-item.on .mnlbl{color:var(--pu2)}
+.mnbico{width:20px;height:20px;color:var(--tx3)}.mnlbl{font-size:8px;color:var(--tx3);letter-spacing:1px;text-transform:uppercase}
+/* MAIN */
+.main{margin-left:var(--sb);flex:1;padding:22px 24px 110px;min-width:0}
+.page{display:none}.page.on{display:block}
+/* HEADER */
+.ph{display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:20px}
+.pt{font-family:"Outfit",sans-serif;font-size:22px;font-weight:800;color:#fff;letter-spacing:.5px}
+.pt .ac{color:var(--pu2)}.ps{font-size:9px;color:var(--tx3);letter-spacing:2.5px;margin-top:3px}
+.lbadge{display:flex;align-items:center;gap:7px;background:var(--bg2);border:1px solid var(--bd);border-radius:20px;padding:6px 14px}
+.ldot{width:7px;height:7px;border-radius:50%;background:var(--gr);animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+.ltxt{font-size:9px;letter-spacing:1px}.clk{font-size:9px;color:var(--tx3);margin-left:6px;letter-spacing:1px}
+.sl{font-size:9px;color:var(--tx3);letter-spacing:3px;text-transform:uppercase;margin-bottom:10px}
+/* METRIC CARDS */
+.mrow{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:11px;margin-bottom:18px}
+.mc{background:var(--bg2);border:1px solid var(--bd);border-radius:12px;padding:15px 16px;position:relative;overflow:hidden}
+.mc::after{content:"";position:absolute;top:0;right:0;width:3px;height:100%;border-radius:0 12px 12px 0}
+.mc.p::after{background:var(--pu)}.mc.b::after{background:var(--bl)}.mc.g::after{background:var(--gr)}.mc.o::after{background:var(--or)}
+.mclbl{font-size:9px;color:var(--tx3);letter-spacing:2px;text-transform:uppercase;margin-bottom:7px}
+.mcval{font-family:"Outfit",sans-serif;font-size:24px;font-weight:700;color:#fff;line-height:1}
+.mcsub{font-size:9px;color:var(--tx3);margin-top:4px}
+/* WINDOWS */
+.win{background:var(--bg2);border:1px solid var(--bd);border-radius:13px;overflow:hidden}
+.wtb{display:flex;align-items:center;justify-content:space-between;padding:11px 15px;border-bottom:1px solid var(--bd)}
+.wds{display:flex;gap:6px}.wd{width:11px;height:11px;border-radius:50%}
+.wt{font-family:"Outfit",sans-serif;font-size:13px;font-weight:600;color:var(--tx)}
+.wb{font-size:9px;padding:3px 9px;border-radius:20px;letter-spacing:1px}
+.wbp{background:rgba(124,106,247,.12);color:var(--pu2)}.wbb{background:rgba(75,158,255,.12);color:var(--bl2)}
+.wbd{background:rgba(74,85,104,.18);color:var(--tx2)}.wbg{background:rgba(61,214,140,.12);color:var(--gr2)}
+.wbtn{font-size:9px;color:var(--tx2);background:var(--bg3);border:1px solid var(--bd);border-radius:6px;padding:3px 9px;cursor:pointer;font-family:"IBM Plex Mono",monospace;transition:all .15s}
+.wbtn:hover{border-color:var(--bl2);color:var(--bl2)}
+/* CHARTS */
+.crow{display:grid;grid-template-columns:1fr 1fr;gap:13px;margin-bottom:18px}
+.cbody{padding:14px 15px 15px}.cwrap{position:relative;width:100%;height:170px}
+.cstats{display:flex;gap:16px;margin-top:11px;padding-top:10px;border-top:1px solid var(--bd)}
+.cv{font-family:"Outfit",sans-serif;font-size:15px;font-weight:700}.ck{font-size:9px;color:var(--tx3);letter-spacing:2px;margin-top:2px}
+/* PROGRESS */
+.progsec{background:var(--bg2);border:1px solid var(--bd);border-radius:13px;padding:17px 19px;margin-bottom:18px}
+.proghdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:13px}
+.progname{font-family:"Outfit",sans-serif;font-size:14px;font-weight:600;color:#fff}
+.progsub{font-size:9px;color:var(--tx3);margin-top:3px;letter-spacing:1px}
+.progpct{font-family:"Outfit",sans-serif;font-size:22px;font-weight:700;color:var(--pu2)}
+.progtrack{height:11px;background:var(--bg4);border-radius:6px;overflow:hidden;margin-bottom:10px}
+.progfill{height:100%;border-radius:6px;background:linear-gradient(90deg,var(--pu),var(--pu2),var(--bl));transition:width .6s ease}
+.pills{display:flex;gap:8px;flex-wrap:wrap}
+.pi{font-size:9px;padding:4px 11px;border-radius:20px;letter-spacing:1px}
+.pig{background:rgba(61,214,140,.1);color:var(--gr2)}.pip{background:rgba(124,106,247,.12);color:var(--pu2)}
+.pid{background:rgba(74,85,104,.2);color:var(--tx2)}.pir{background:rgba(240,82,82,.1);color:#f8a0a0}
+/* ACTIVITY */
+.lrow{display:grid;grid-template-columns:1fr 1fr;gap:13px;margin-bottom:18px}
+.tlist{padding:13px 15px;max-height:320px;overflow-y:auto}
+.phdr{font-size:8px;color:var(--tx3);letter-spacing:3px;text-transform:uppercase;padding:8px 0 5px;border-bottom:1px solid var(--bd);margin-bottom:5px}
+.ti{display:flex;align-items:flex-start;gap:9px;padding:7px 0;border-bottom:1px solid rgba(37,47,69,.5)}
+.ti:last-child{border-bottom:none}
+.tic{width:19px;height:19px;border-radius:5px;display:flex;align-items:center;justify-content:center;font-size:10px;flex-shrink:0;margin-top:1px}
+.ts{background:rgba(61,214,140,.12);color:var(--gr)}.ta{background:rgba(124,106,247,.12);color:var(--pu2)}
+.tp{background:rgba(74,85,104,.15);color:var(--tx3)}.tf{background:rgba(240,82,82,.1);color:#f8a0a0}
+.tinfo{flex:1;min-width:0}.tid{font-size:8px;color:var(--tx3);letter-spacing:1px;margin-bottom:2px}
+.tdesc{font-size:11px;color:var(--tx);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tfile{font-size:9px;color:var(--tx3);margin-top:1px}
+/* LOGS */
+.logb{max-height:320px;overflow-y:auto}
+.lr{display:flex;align-items:flex-start;gap:7px;padding:7px 15px;border-bottom:1px solid rgba(37,47,69,.4);font-size:10px;line-height:1.5}
+.lr:last-child{border-bottom:none}
+.lic{width:15px;height:15px;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:9px;flex-shrink:0;margin-top:1px}
+.lis{background:rgba(61,214,140,.1);color:var(--gr)}.liw{background:rgba(245,166,35,.1);color:var(--or)}
+.lie{background:rgba(240,82,82,.1);color:#f8a0a0}.lii{background:rgba(74,85,104,.15);color:var(--tx3)}
+.lib{background:rgba(75,158,255,.1);color:var(--bl2)}
+.lt{color:var(--tx3);flex-shrink:0;min-width:52px}.lm{color:var(--tx2);flex:1;word-break:break-word}
+/* OUTPUT FILES */
+.outsec{background:var(--bg2);border:1px solid var(--bd);border-radius:13px;overflow:hidden}
+.orow{display:flex;align-items:center;justify-content:space-between;padding:10px 15px;border-bottom:1px solid rgba(37,47,69,.5)}
+.orow:last-child{border-bottom:none}
+.oleft{display:flex;align-items:center;gap:11px}
+.oico{width:32px;height:32px;border-radius:8px;background:rgba(124,106,247,.1);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.oname{font-size:12px;color:var(--tx);font-weight:500}.ometa{font-size:9px;color:var(--tx3);margin-top:1px}
+.odl{font-size:9px;color:var(--pu2);background:rgba(124,106,247,.1);border:1px solid rgba(124,106,247,.2);border-radius:6px;padding:4px 11px;cursor:pointer;font-family:"IBM Plex Mono",monospace;transition:all .15s}
+.odl:hover{background:rgba(124,106,247,.2);border-color:rgba(124,106,247,.45)}
+/* INPUT PAGE */
+.igrid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:18px}
+.upzone{border:2px dashed var(--bd2);border-radius:12px;padding:40px 24px;text-align:center;cursor:pointer;transition:all .2s;background:var(--bg2)}
+.upzone:hover,.upzone.drag{border-color:var(--pu);background:rgba(124,106,247,.04)}
+.upzone.ok{border-color:var(--gr);border-style:solid}
+.upicon{width:40px;height:40px;margin:0 auto 14px;color:var(--tx3)}
+.uptitle{font-family:"Outfit",sans-serif;font-size:15px;font-weight:600;color:var(--tx);margin-bottom:6px}
+.upsub{font-size:10px;color:var(--tx3);letter-spacing:1px}
+#finput{display:none}
+.pstatrow{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--bd)}
+.pstatrow:last-child{border-bottom:none}
+.pstatlbl{font-size:10px;color:var(--tx3);letter-spacing:1px}
+.pstatval{font-family:"Outfit",sans-serif;font-size:14px;font-weight:700}
+.startbtn{width:100%;padding:14px;border-radius:10px;background:linear-gradient(135deg,var(--pu),var(--pu2));border:none;color:#fff;font-family:"Outfit",sans-serif;font-size:14px;font-weight:700;letter-spacing:2px;cursor:pointer;transition:all .2s;margin-top:14px}
+.startbtn:hover{opacity:.88;transform:translateY(-1px)}.startbtn:active{transform:none}
+.startbtn:disabled{opacity:.35;cursor:not-allowed;transform:none}
+/* CHAT */
+.chatwin{background:var(--bg2);border:1px solid var(--bd);border-radius:13px;overflow:hidden;display:flex;flex-direction:column;height:100%;min-height:460px}
+.chatmsgs{flex:1;padding:14px 16px;height:360px;overflow-y:auto;display:flex;flex-direction:column;gap:10px}
+.cmsg{max-width:85%;padding:10px 14px;border-radius:10px;font-size:11px;line-height:1.6;word-break:break-word}
+.cmsg.user{align-self:flex-end;background:rgba(124,106,247,.15);border:1px solid rgba(124,106,247,.2);color:var(--tx)}
+.cmsg.bot{align-self:flex-start;background:var(--bg3);border:1px solid var(--bd);color:var(--tx2)}
+.cmsg.thinking{color:var(--tx3);font-style:italic}
+.chatfoot{display:flex;border-top:1px solid var(--bd)}
+.chatinput{flex:1;background:transparent;border:none;outline:none;padding:13px 16px;font-size:11px;color:var(--tx);font-family:"IBM Plex Mono",monospace;resize:none;height:48px}
+.chatinput::placeholder{color:var(--tx3)}
+.chatsend{padding:0 18px;background:transparent;border:none;border-left:1px solid var(--bd);color:var(--pu2);cursor:pointer;transition:all .15s;display:flex;align-items:center}
+.chatsend:hover{background:rgba(124,106,247,.08)}
+/* SETTINGS */
+.sgrid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.scard{background:var(--bg2);border:1px solid var(--bd);border-radius:13px;overflow:hidden}
+.scardtitle{padding:12px 16px;border-bottom:1px solid var(--bd);font-family:"Outfit",sans-serif;font-size:13px;font-weight:600;color:var(--tx);display:flex;align-items:center;gap:8px}
+.scardbody{padding:16px}
+.srow{margin-bottom:14px}.srow:last-child{margin-bottom:0}
+.slbl{font-size:9px;color:var(--tx3);letter-spacing:2px;text-transform:uppercase;margin-bottom:7px;display:block}
+.sinput{width:100%;background:var(--bg3);border:1px solid var(--bd);border-radius:8px;padding:9px 13px;font-size:11px;color:var(--tx);font-family:"IBM Plex Mono",monospace;outline:none;transition:border-color .15s}
+.sinput:focus{border-color:var(--pu2)}.sinput::placeholder{color:var(--tx3)}
+.sselect{width:100%;background:var(--bg3);border:1px solid var(--bd);border-radius:8px;padding:9px 13px;font-size:11px;color:var(--tx);font-family:"IBM Plex Mono",monospace;outline:none;cursor:pointer;appearance:none}
+.togglerow{display:flex;align-items:center;justify-content:space-between;padding:9px 0;border-bottom:1px solid rgba(37,47,69,.4)}
+.togglerow:last-child{border-bottom:none}
+.tglbl{font-size:11px;color:var(--tx2)}.tgsub{font-size:9px;color:var(--tx3);margin-top:2px}
+.tgl{width:40px;height:22px;border-radius:11px;background:var(--bg4);border:1px solid var(--bd);cursor:pointer;position:relative;transition:all .2s;flex-shrink:0}
+.tgl.on{background:var(--pu);border-color:var(--pu)}
+.tgl::after{content:"";position:absolute;top:2px;left:2px;width:16px;height:16px;border-radius:50%;background:#fff;transition:transform .2s}
+.tgl.on::after{transform:translateX(18px)}
+.savebtn{width:100%;padding:10px;border-radius:8px;background:var(--pu);border:none;color:#fff;font-family:"IBM Plex Mono",monospace;font-size:10px;letter-spacing:2px;cursor:pointer;margin-top:14px;transition:all .15s;text-transform:uppercase}
+.savebtn:hover{background:var(--pu2)}
+.dbtn{width:100%;padding:10px;border-radius:8px;background:transparent;border:1px solid rgba(240,82,82,.3);color:#f8a0a0;font-family:"IBM Plex Mono",monospace;font-size:10px;letter-spacing:2px;cursor:pointer;margin-bottom:8px;transition:all .15s;text-transform:uppercase}
+.dbtn:hover{background:rgba(240,82,82,.1);border-color:var(--re)}
+.kstat{font-size:9px;margin-top:5px;letter-spacing:1px}.kset{color:var(--gr2)}.kunset{color:var(--tx3)}
+/* GLOBAL KEY BANNER */
+.gkey-banner{background:rgba(61,214,140,.07);border:1px solid rgba(61,214,140,.2);border-radius:8px;padding:10px 14px;font-size:10px;color:var(--gr2);letter-spacing:.5px;margin-bottom:14px;line-height:1.5}
+/* ISLAND */
+.iwrap{position:fixed;bottom:22px;left:calc(var(--sb) + (100vw - var(--sb))/2);transform:translateX(-50%);z-index:400;pointer-events:none}
+.island{pointer-events:all;display:inline-flex;align-items:center;gap:0;background:#0d1120;border:1px solid var(--bd2);border-radius:100px;padding:8px 8px;box-shadow:0 8px 40px rgba(0,0,0,.8),inset 0 1px 0 rgba(255,255,255,.04)}
+.isep{width:1px;height:28px;background:var(--bd);margin:0 6px;flex-shrink:0}
+.istat{display:flex;align-items:center;gap:7px;padding:0 12px}
+.idot{width:8px;height:8px;border-radius:50%;transition:background .3s}
+.ilbl{font-size:9px;letter-spacing:2px;min-width:56px;transition:color .3s;font-family:"IBM Plex Mono",monospace}
+.itime{font-size:9px;color:var(--tx3);padding:0 12px;font-family:"IBM Plex Mono",monospace;letter-spacing:1px}
+.ibtn{display:flex;align-items:center;gap:5px;padding:7px 15px;border-radius:80px;border:1px solid transparent;font-size:9px;letter-spacing:1.5px;text-transform:uppercase;font-family:"IBM Plex Mono",monospace;cursor:pointer;transition:all .15s;background:transparent;color:var(--tx2)}
+.ibtn svg{width:11px;height:11px;flex-shrink:0}
+.ibtn:hover{background:rgba(255,255,255,.04);color:var(--tx)}
+.ibtn-stop{color:#f8a0a0}.ibtn-stop:hover{background:rgba(240,82,82,.12);border-color:rgba(240,82,82,.25);color:var(--re)}
+.ibtn-pause:hover{background:rgba(61,214,140,.07);border-color:rgba(61,214,140,.18);color:var(--gr2)}
+.ibtn-pause.paused{color:var(--gr2)}
+.ibtn-reset:hover{background:rgba(124,106,247,.1);border-color:rgba(124,106,247,.22);color:var(--pu2)}
+/* TOAST */
+.toast{position:fixed;top:22px;right:22px;z-index:600;background:var(--bg3);border:1px solid var(--bd2);border-radius:10px;padding:12px 18px;font-size:11px;letter-spacing:.5px;opacity:0;transform:translateY(-8px);transition:all .25s;pointer-events:none}
+.toast.show{opacity:1;transform:translateY(0)}
+.toast.ok{border-left:3px solid var(--gr);color:var(--gr2)}.toast.err{border-left:3px solid var(--re);color:#f8a0a0}.toast.info{border-left:3px solid var(--pu);color:var(--pu2)}
+/* MOBILE — all fixes in one place */
+/* LABS */
+.labs-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.lab-panel{background:var(--bg2);border:1px solid var(--bd);border-radius:13px;overflow:hidden;display:flex;flex-direction:column}
+.lab-panel-full{grid-column:1/-1}
+.mode-tabs{display:flex;gap:6px;padding:12px 15px;border-bottom:1px solid var(--bd);flex-wrap:wrap}
+.mtab{font-size:9px;padding:5px 13px;border-radius:20px;letter-spacing:1.5px;cursor:pointer;border:1px solid var(--bd);color:var(--tx3);background:transparent;font-family:"IBM Plex Mono",monospace;transition:all .15s;text-transform:uppercase}
+.mtab.on{background:var(--pu);border-color:var(--pu);color:#fff}
+.lab-body{padding:15px;flex:1;display:flex;flex-direction:column;gap:12px}
+.lab-ta{width:100%;background:var(--bg3);border:1px solid var(--bd);border-radius:8px;padding:12px;font-size:11px;color:var(--tx);font-family:"IBM Plex Mono",monospace;outline:none;resize:vertical;min-height:140px;transition:border-color .15s}
+.lab-ta:focus{border-color:var(--pu2)}.lab-ta::placeholder{color:var(--tx3)}
+.lang-sel{background:var(--bg3);border:1px solid var(--bd);border-radius:8px;padding:7px 12px;font-size:11px;color:var(--tx);font-family:"IBM Plex Mono",monospace;outline:none;cursor:pointer}
+.lab-run{padding:10px 22px;border-radius:8px;background:linear-gradient(135deg,var(--pu),var(--bl));border:none;color:#fff;font-family:"IBM Plex Mono",monospace;font-size:10px;letter-spacing:2px;cursor:pointer;transition:all .2s;text-transform:uppercase}
+.lab-run:hover{opacity:.85}.lab-run:disabled{opacity:.4;cursor:not-allowed}
+.lab-result{background:var(--bg3);border:1px solid var(--bd);border-radius:8px;padding:13px;font-size:11px;color:var(--tx2);font-family:"IBM Plex Mono",monospace;white-space:pre-wrap;word-break:break-word;min-height:160px;max-height:420px;overflow-y:auto;line-height:1.6}
+.lab-result.empty{color:var(--tx3);font-style:italic}
+.lab-copy{font-size:9px;padding:4px 12px;border-radius:6px;background:var(--bg4);border:1px solid var(--bd);color:var(--tx2);cursor:pointer;font-family:"IBM Plex Mono",monospace;transition:all .15s;text-transform:uppercase;letter-spacing:1px}
+.lab-copy:hover{border-color:var(--gr);color:var(--gr2)}
+.lab-toolbar{display:flex;align-items:center;justify-content:space-between;gap:8px}
+/* FILE VIEWER MODAL */
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.78);z-index:700;display:none;align-items:center;justify-content:center;padding:20px}
+.modal-bg.on{display:flex}
+.modal-box{background:var(--bg2);border:1px solid var(--bd2);border-radius:14px;width:100%;max-width:860px;max-height:88vh;display:flex;flex-direction:column;overflow:hidden}
+.modal-hdr{display:flex;align-items:center;justify-content:space-between;padding:13px 18px;border-bottom:1px solid var(--bd)}
+.modal-title{font-family:"Outfit",sans-serif;font-size:13px;font-weight:600;color:var(--tx)}
+.modal-close{width:28px;height:28px;border-radius:7px;background:var(--bg3);border:1px solid var(--bd);color:var(--tx2);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:14px;line-height:1;transition:all .15s}
+.modal-close:hover{background:rgba(240,82,82,.15);color:var(--re);border-color:rgba(240,82,82,.3)}
+.modal-code{flex:1;overflow-y:auto;padding:16px 18px;font-size:11px;font-family:"IBM Plex Mono",monospace;color:var(--tx2);white-space:pre-wrap;word-break:break-word;line-height:1.7}
+.modal-foot{display:flex;gap:8px;padding:11px 18px;border-top:1px solid var(--bd)}
+/* FULLSCREEN PREVIEW MODAL — captures all keyboard input for games/apps */
+.preview-modal{position:fixed;inset:0;background:#000;z-index:900;display:none;flex-direction:column}
+.preview-modal.on{display:flex}
+.preview-modal-bar{height:40px;background:#0b0e18;border-bottom:1px solid var(--bd);display:flex;align-items:center;gap:10px;padding:0 14px;flex-shrink:0}
+.preview-modal-title{font-size:11px;color:var(--tx2);flex:1;font-family:"IBM Plex Mono",monospace;letter-spacing:1px}
+.preview-modal-hint{font-size:9px;color:var(--tx3);letter-spacing:1px}
+.preview-modal iframe{flex:1;width:100%;border:none;background:#fff}
+.preview-modal-close{padding:5px 14px;border-radius:6px;background:rgba(240,82,82,.15);border:1px solid rgba(240,82,82,.3);color:#f8a0a0;font-family:"IBM Plex Mono",monospace;font-size:9px;letter-spacing:1.5px;cursor:pointer;transition:all .15s;text-transform:uppercase}
+.preview-modal-close:hover{background:rgba(240,82,82,.3)}
+/* App URL banner shown when Streamlit/Flask is running */
+.app-url-banner{background:rgba(61,214,140,.07);border:1px solid rgba(61,214,140,.25);border-radius:8px;padding:10px 14px;margin-bottom:10px;display:none;align-items:center;gap:10px;font-size:11px}
+.app-url-text{color:var(--gr2);flex:1;font-family:"IBM Plex Mono",monospace}
+.app-url-btn{padding:5px 14px;border-radius:6px;background:var(--gr);border:none;color:#000;font-family:"IBM Plex Mono",monospace;font-size:9px;letter-spacing:1px;cursor:pointer;font-weight:700}
+.app-stop-btn{padding:5px 14px;border-radius:6px;background:rgba(240,82,82,.15);border:1px solid rgba(240,82,82,.3);color:#f8a0a0;font-family:"IBM Plex Mono",monospace;font-size:9px;letter-spacing:1px;cursor:pointer}
+.keyalert{background:rgba(240,82,82,.08);border:1px solid rgba(240,82,82,.25);border-radius:8px;padding:9px 14px;font-size:10px;color:#f8a0a0;margin-bottom:14px;line-height:1.5;display:none}
+body.mob .labs-grid{grid-template-columns:1fr}
+body.mob .labs-scratch-cols{grid-template-columns:1fr!important;display:flex!important;flex-direction:column!important}
+body.mob .mrow{grid-template-columns:1fr 1fr}
+body.mob .crow{grid-template-columns:1fr}
+body.mob .lrow{grid-template-columns:1fr}
+body.mob .igrid{grid-template-columns:1fr}
+body.mob .sgrid{grid-template-columns:1fr}
+body.mob .sidebar{display:none}
+body.mob .mob-nav{display:flex}
+body.mob .main{margin-left:0;padding:16px 14px 80px}
+/* extra safe zone so last card is never hidden under the 60px bottom nav */
+body.mob .page{padding-bottom:70px}
+body.mob .iwrap{display:none}
+/* AGENTS PAGE */
+.agent-cards{display:grid;grid-template-columns:repeat(6,1fr);gap:10px;margin-bottom:18px}
+.acard{background:var(--bg2);border:1px solid var(--bd);border-radius:12px;padding:13px 14px}
+.acard-name{font-size:9px;letter-spacing:2px;text-transform:uppercase;margin-bottom:8px;font-weight:600}
+.acard-status{display:flex;align-items:center;gap:6px;margin-bottom:6px}
+.adot{width:8px;height:8px;border-radius:50%;background:var(--tx3);flex-shrink:0;transition:background .3s}
+.adot.on{background:var(--gr);box-shadow:0 0 6px var(--gr)}
+.acard-task{font-size:9px;color:var(--tx3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.acard-model{font-size:8px;color:var(--tx3);margin-top:4px;opacity:.6}
+.chat-feed{background:var(--bg2);border:1px solid var(--bd);border-radius:13px;overflow:hidden;margin-bottom:18px}
+.chat-feed-body{height:340px;overflow-y:auto;padding:10px 14px;display:flex;flex-direction:column;gap:4px}
+.cf-entry{display:flex;gap:8px;align-items:flex-start;padding:5px 0;border-bottom:1px solid rgba(37,47,69,.3);font-size:10px;line-height:1.5}
+.cf-entry:last-child{border-bottom:none}
+.cf-agent{font-size:8px;font-weight:600;letter-spacing:1.5px;min-width:80px;flex-shrink:0;margin-top:2px}
+.cf-task{font-size:8px;color:var(--tx3);min-width:52px;flex-shrink:0;margin-top:2px}
+.cf-msg{color:var(--tx2);flex:1;word-break:break-word}
+.cf-filters{display:flex;gap:6px;padding:10px 14px;border-bottom:1px solid var(--bd);flex-wrap:wrap}
+.cf-filter{font-size:8px;padding:3px 10px;border-radius:20px;letter-spacing:1px;cursor:pointer;border:1px solid var(--bd);color:var(--tx3);background:transparent;font-family:"IBM Plex Mono",monospace;transition:all .15s;text-transform:uppercase}
+.cf-filter.on{border-color:var(--pu);color:var(--pu2);background:rgba(124,106,247,.1)}
+.agent-ctrl{background:var(--bg2);border:1px solid var(--bd);border-radius:13px;overflow:hidden}
+.agent-ctrl-body{padding:14px;display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.ctrl-inp{flex:1;min-width:160px;background:var(--bg3);border:1px solid var(--bd);border-radius:8px;padding:8px 12px;font-size:11px;color:var(--tx);font-family:"IBM Plex Mono",monospace;outline:none}
+.ctrl-inp:focus{border-color:var(--pu2)}
+.ctrl-btn{padding:8px 16px;border-radius:8px;background:var(--bg3);border:1px solid var(--bd);color:var(--tx2);font-family:"IBM Plex Mono",monospace;font-size:9px;letter-spacing:1px;cursor:pointer;transition:all .15s;text-transform:uppercase}
+.ctrl-btn:hover{border-color:var(--pu2);color:var(--pu2)}
+body.mob .agent-cards{grid-template-columns:1fr 1fr}
+/* INPUT TABS */
+.itab{flex:1;padding:8px;border-radius:7px;text-align:center;font-size:10px;letter-spacing:1.5px;cursor:pointer;color:var(--tx3);transition:all .2s;font-family:"IBM Plex Mono",monospace;text-transform:uppercase;border:none;background:transparent}
+.itab.on{background:var(--pu);color:#fff}
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR (desktop) -->
+<aside class="sidebar">
+  <div style="display:flex;flex-direction:column;align-items:center;width:100%">
+    <div class="sb-logo">K</div>
+    <nav class="sb-nav">
+      <div class="sbi on" id="n-dash" onclick="goPage('dash')">
+        <svg class="sbico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
+        <span class="sblbl">Dash</span>
+      </div>
+      <div class="sbi" id="n-input" onclick="goPage('input')">
+        <svg class="sbico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+        <span class="sblbl">Input</span>
+      </div>
+      <div class="sbi" id="n-agents" onclick="goPage('agents')">
+        <svg class="sbico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="5" r="2"/><circle cx="5" cy="19" r="2"/><circle cx="19" cy="19" r="2"/><line x1="12" y1="7" x2="12" y2="13"/><line x1="12" y1="13" x2="5" y2="17"/><line x1="12" y1="13" x2="19" y2="17"/></svg>
+        <span class="sblbl">Agents</span>
+      </div>
+      <div class="sbi" id="n-labs" onclick="goPage('labs')">
+        <svg class="sbico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M9 3h6"/><path d="M10 3v5.5L5.5 17A2 2 0 0 0 7.37 20h9.26a2 2 0 0 0 1.87-3L14 8.5V3"/><circle cx="9.5" cy="15.5" r="0.5" fill="currentColor" stroke="none"/><circle cx="12" cy="17" r="0.5" fill="currentColor" stroke="none"/></svg>
+        <span class="sblbl">Labs</span>
+      </div>
+      <div class="sbi" id="n-settings" onclick="goPage('settings')">
+        <svg class="sbico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+        <span class="sblbl">Config</span>
+      </div>
+    </nav>
+  </div>
+  <div class="sb-bot"><div class="sb-dot" id="sb-dot"></div><span class="sb-st" id="sb-st">IDLE</span></div>
+</aside>
+
+<!-- MOBILE BOTTOM NAV -->
+<nav class="mob-nav">
+  <div class="mob-nav-item on" id="mn-dash" onclick="goPage('dash')">
+    <svg class="mnbico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
+    <span class="mnlbl">Dash</span>
+  </div>
+  <div class="mob-nav-item" id="mn-input" onclick="goPage('input')">
+    <svg class="mnbico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+    <span class="mnlbl">Input</span>
+  </div>
+  <div class="mob-nav-item" id="mn-labs" onclick="goPage('labs')">
+    <svg class="mnbico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M9 3h6"/><path d="M10 3v5.5L5.5 17A2 2 0 0 0 7.37 20h9.26a2 2 0 0 0 1.87-3L14 8.5V3"/><circle cx="9.5" cy="15.5" r="0.5" fill="currentColor" stroke="none"/><circle cx="12" cy="17" r="0.5" fill="currentColor" stroke="none"/></svg>
+    <span class="mnlbl">Labs</span>
+  </div>
+  <div class="mob-nav-item" id="mn-agents" onclick="goPage('agents')">
+    <svg class="mnbico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="5" r="2"/><circle cx="5" cy="19" r="2"/><circle cx="19" cy="19" r="2"/><line x1="12" y1="7" x2="12" y2="12"/><line x1="12" y1="12" x2="5.5" y2="17"/><line x1="12" y1="12" x2="18.5" y2="17"/></svg>
+    <span class="mnlbl">Agents</span>
+  </div>
+  <div class="mob-nav-item" id="mn-settings" onclick="goPage('settings')">
+    <svg class="mnbico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+    <span class="mnlbl">Config</span>
+  </div>
+</nav>
+
+<main class="main">
+
+<!-- ====== DASHBOARD PAGE ====== -->
+<div class="page on" id="page-dash">
+  <div class="ph">
+    <div><div class="pt">KAT<span class="ac">A</span>LYST <span style="color:var(--tx2);font-size:15px;font-weight:500">/ Dashboard</span></div><div class="ps">ANALYTICAL OVERVIEW</div></div>
+    <div class="lbadge"><div class="ldot"></div><span class="ltxt" id="ltxt" style="color:var(--gr2)">RUNNING</span><span class="clk" id="clock">00:00:00</span></div>
+  </div>
+  <div class="mrow">
+    <div class="mc p"><div class="mclbl">CPU Usage</div><div class="mcval" id="cpu-m">-</div><div class="mcsub">Current load</div></div>
+    <div class="mc b"><div class="mclbl">RAM Usage</div><div class="mcval" id="ram-m">-</div><div class="mcsub">Memory used</div></div>
+    <div class="mc g"><div class="mclbl">Tasks Done</div><div class="mcval" id="tasks-m">- / -</div><div class="mcsub">This project</div></div>
+    <div class="mc o"><div class="mclbl">Lessons</div><div class="mcval" id="mem-m">-</div><div class="mcsub">In memory</div></div>
+  </div>
+  <div class="sl">SYSTEM PERFORMANCE</div>
+  <div class="crow">
+    <div class="win">
+      <div class="wtb"><div class="wds"><div class="wd" style="background:#f05252"></div><div class="wd" style="background:#f5a623"></div><div class="wd" style="background:var(--gr)"></div></div><span class="wt">CPU Load</span><span class="wb wbp">FIXED 0-100%</span></div>
+      <div class="cbody"><div class="cwrap"><canvas id="cpuChart" aria-label="CPU usage"></canvas></div>
+      <div class="cstats"><div><div class="cv" style="color:var(--pu2)" id="cc">-</div><div class="ck">CURRENT</div></div><div><div class="cv" style="color:var(--tx2)" id="ca">-</div><div class="ck">AVG 60s</div></div><div><div class="cv" style="color:var(--tx2)" id="cp">-</div><div class="ck">PEAK</div></div></div></div>
+    </div>
+    <div class="win">
+      <div class="wtb"><div class="wds"><div class="wd" style="background:#f05252"></div><div class="wd" style="background:#f5a623"></div><div class="wd" style="background:var(--gr)"></div></div><span class="wt">RAM Usage</span><span class="wb wbb">FIXED 0-100%</span></div>
+      <div class="cbody"><div class="cwrap"><canvas id="ramChart" aria-label="RAM usage"></canvas></div>
+      <div class="cstats"><div><div class="cv" style="color:var(--bl2)" id="rc">-</div><div class="ck">CURRENT</div></div><div><div class="cv" style="color:var(--tx2)" id="ra">-</div><div class="ck">AVG 60s</div></div><div><div class="cv" style="color:var(--tx2)" id="rp">-</div><div class="ck">PEAK</div></div></div></div>
+    </div>
+  </div>
+  <div class="sl">PROJECT PROGRESS</div>
+  <div class="progsec">
+    <div class="proghdr"><div><div class="progname" id="pname">No project loaded</div><div class="progsub">Upload a project JSON on the Input page</div></div><div class="progpct" id="ppct">0%</div></div>
+    <div class="progtrack"><div class="progfill" id="pfill" style="width:0%"></div></div>
+    <div class="pills">
+      <span class="pi pig" id="pdone">&#10003; 0 Complete</span>
+      <span class="pi pip" id="pact">&#8635; 0 Running</span>
+      <span class="pi pid" id="ppend">&#9675; 0 Pending</span>
+      <span class="pi pir" id="pfail">&#10005; 0 Failed</span>
+    </div>
+    <div id="phase-pills" style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px;padding-top:8px;border-top:1px solid var(--bd)"></div>
+  </div>
+  <div class="sl">ACTIVITY</div>
+  <div class="lrow">
+    <div class="win">
+      <div class="wtb"><div class="wds"><div class="wd" style="background:#f05252"></div><div class="wd" style="background:#f5a623"></div><div class="wd" style="background:var(--gr)"></div></div><span class="wt">Progress List</span><span class="wb wbd" id="tcbadge">0 TASKS</span></div>
+      <div class="tlist" id="tlist"><div style="padding:28px;text-align:center;color:var(--tx3);font-size:10px">No project loaded</div></div>
+    </div>
+    <div class="win">
+      <div class="wtb"><div class="wds"><div class="wd" style="background:#f05252"></div><div class="wd" style="background:#f5a623"></div><div class="wd" style="background:var(--gr)"></div></div><span class="wt">Log Report</span><button class="wbtn" id="dl-log">&#8595; Download</button></div>
+      <div class="logb" id="logb"><div style="padding:28px;text-align:center;color:var(--tx3);font-size:10px">No activity yet</div></div>
+    </div>
+  </div>
+  <div class="sl">OUTPUT - CODE BY KATALYST</div>
+  <div class="outsec">
+    <div class="wtb"><div class="wds"><div class="wd" style="background:#f05252"></div><div class="wd" style="background:#f5a623"></div><div class="wd" style="background:var(--gr)"></div></div><span class="wt">Generated Files</span><span class="wb wbd" id="fcbadge">0 FILES</span></div>
+    <div id="outlist"><div style="padding:24px;text-align:center;color:var(--tx3);font-size:10px">No files generated yet</div></div>
+  </div>
+
+  <!-- PACKAGE PANEL — shown only when project is 100% complete -->
+  <div id="package-panel" style="display:none;margin-top:18px">
+    <div class="sl">PACKAGE YOUR APP</div>
+    <div style="background:var(--bg2);border:1px solid rgba(61,214,140,.25);border-radius:13px;padding:18px 20px">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">
+        <span style="font-size:18px">&#9989;</span>
+        <div>
+          <div style="font-family:'Outfit',sans-serif;font-size:14px;font-weight:700;color:var(--gr2)">Project Complete — Ready to Package</div>
+          <div style="font-size:9px;color:var(--tx3);letter-spacing:1px;margin-top:3px">Choose a format to export your app</div>
+        </div>
+        <span id="pkg-apptype" style="margin-left:auto;font-size:9px;padding:4px 12px;border-radius:20px;background:var(--bg3);border:1px solid var(--bd);color:var(--tx2);letter-spacing:1px"></span>
+      </div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap">
+        <button onclick="startPackage('docker')" class="pkg-btn" style="flex:1;min-width:120px;padding:12px;border-radius:10px;background:rgba(75,158,255,.1);border:1px solid rgba(75,158,255,.3);color:var(--bl2);font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:1.5px;cursor:pointer;transition:all .2s;text-align:center">
+          <div style="font-size:20px;margin-bottom:5px">&#127959;</div>DOCKER<div style="font-size:8px;color:var(--tx3);margin-top:3px">Dockerfile + compose</div>
+        </button>
+        <button onclick="startPackage('exe')" class="pkg-btn" style="flex:1;min-width:120px;padding:12px;border-radius:10px;background:rgba(124,106,247,.1);border:1px solid rgba(124,106,247,.3);color:var(--pu2);font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:1.5px;cursor:pointer;transition:all .2s;text-align:center">
+          <div style="font-size:20px;margin-bottom:5px">&#128187;</div>EXE<div style="font-size:8px;color:var(--tx3);margin-top:3px">Standalone executable</div>
+        </button>
+        <button onclick="startPackage('apk')" class="pkg-btn" style="flex:1;min-width:120px;padding:12px;border-radius:10px;background:rgba(61,214,140,.08);border:1px solid rgba(61,214,140,.25);color:var(--gr2);font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:1.5px;cursor:pointer;transition:all .2s;text-align:center">
+          <div style="font-size:20px;margin-bottom:5px">&#128241;</div>APK<div style="font-size:8px;color:var(--tx3);margin-top:3px">Android package</div>
+        </button>
+        <button onclick="startPackage('zip')" class="pkg-btn" style="flex:1;min-width:120px;padding:12px;border-radius:10px;background:rgba(245,166,35,.08);border:1px solid rgba(245,166,35,.25);color:var(--or);font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:1.5px;cursor:pointer;transition:all .2s;text-align:center">
+          <div style="font-size:20px;margin-bottom:5px">&#128230;</div>ZIP<div style="font-size:8px;color:var(--tx3);margin-top:3px">Clean zip + README</div>
+        </button>
+      </div>
+      <!-- Progress bar shown while packaging -->
+      <div id="pkg-progress-wrap" style="display:none;margin-top:14px">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+          <span id="pkg-step" style="font-size:10px;color:var(--tx2)">Starting...</span>
+          <span id="pkg-pct" style="font-size:10px;color:var(--pu2)">0%</span>
+        </div>
+        <div style="height:6px;background:var(--bg4);border-radius:3px;overflow:hidden">
+          <div id="pkg-bar" style="height:100%;width:0%;background:linear-gradient(90deg,var(--pu),var(--bl));border-radius:3px;transition:width .4s ease"></div>
+        </div>
+      </div>
+      <!-- Download button shown when done -->
+      <div id="pkg-done-wrap" style="display:none;margin-top:14px;display:none">
+        <div style="display:flex;align-items:center;gap:10px;padding:12px;background:rgba(61,214,140,.07);border:1px solid rgba(61,214,140,.2);border-radius:8px">
+          <span style="font-size:16px">&#10003;</span>
+          <span id="pkg-done-msg" style="font-size:11px;color:var(--gr2);flex:1">Package ready</span>
+          <button id="pkg-dl-btn" onclick="pkgDownload()" style="padding:8px 18px;border-radius:8px;background:var(--gr);border:none;color:#000;font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:1px;cursor:pointer;font-weight:700">&#8595; Download</button>
+        </div>
+      </div>
+      <div id="pkg-apk-warn" style="display:none;margin-top:10px;font-size:9px;color:var(--or);padding:8px 12px;background:rgba(245,166,35,.07);border:1px solid rgba(245,166,35,.2);border-radius:6px;line-height:1.6">
+        &#9888; APK build takes 15-40 minutes and needs ~4GB Android SDK on first run. The dashboard stays live while it builds. Download the ZIP and follow BUILD_INSTRUCTIONS.md.
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ====== INPUT PAGE ====== -->
+<div class="page" id="page-input">
+  <div class="ph"><div><div class="pt">KAT<span class="ac">A</span>LYST <span style="color:var(--tx2);font-size:15px;font-weight:500">/ Input</span></div><div class="ps">DESCRIBE YOUR APP — OR UPLOAD JSON</div></div></div>
+
+  <!-- MODE TABS -->
+  <div style="display:flex;gap:0;background:var(--bg3);border:1px solid var(--bd);border-radius:10px;padding:4px;margin-bottom:16px;max-width:360px">
+    <button class="itab on" id="itab-prompt" onclick="switchInputTab('prompt')">&#9997; Describe App</button>
+    <button class="itab" id="itab-json" onclick="switchInputTab('json')">&#8679; Upload JSON</button>
+  </div>
+
+  <!-- PROMPT MODE -->
+  <div id="input-prompt-mode">
+    <textarea id="prompt-input" placeholder="Describe what you want to build...&#10;&#10;Examples:&#10;• A snake game in HTML/JS&#10;• A Python calculator with GUI&#10;• A personal finance tracker with charts" style="width:100%;background:var(--bg3);border:1px solid var(--bd);border-radius:10px;padding:14px;font-size:12px;color:var(--tx);font-family:'IBM Plex Mono',monospace;outline:none;resize:vertical;min-height:140px;transition:border-color .15s;line-height:1.6;display:block;margin-bottom:10px" onfocus="this.style.borderColor='var(--pu2)'" onblur="this.style.borderColor='var(--bd)'"></textarea>
+
+    <!-- Language + action row -->
+    <div style="display:flex;gap:8px;align-items:center;margin-bottom:14px;flex-wrap:wrap">
+      <select id="gen-lang" style="background:var(--bg3);border:1px solid var(--bd);border-radius:8px;padding:8px 12px;font-size:11px;color:var(--tx);font-family:'IBM Plex Mono',monospace;outline:none;cursor:pointer">
+        <option value="HTML/JS">HTML / JS (runs in browser)</option>
+        <option value="Python">Python</option>
+        <option value="Python + Streamlit">Python + Streamlit</option>
+        <option value="Python + Flask">Python + Flask</option>
+      </select>
+      <button id="gen-code-btn" onclick="generateCode()" style="padding:9px 22px;border-radius:8px;background:linear-gradient(135deg,var(--pu),var(--bl));border:none;color:#fff;font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:2px;cursor:pointer;transition:all .2s;text-transform:uppercase">&#9889; Generate Code</button>
+      <button onclick="convertPrompt()" style="padding:9px 16px;border-radius:8px;background:transparent;border:1px solid var(--bd2);color:var(--tx2);font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:2px;cursor:pointer;transition:all .15s;text-transform:uppercase">&#9881; Full Project Plan</button>
+    </div>
+
+    <!-- Generated code panel -->
+    <div id="gen-code-panel" style="display:none;background:var(--bg2);border:1px solid var(--bd);border-radius:13px;overflow:hidden;margin-bottom:16px">
+      <div class="wtb">
+        <div class="wds"><div class="wd" style="background:#f05252"></div><div class="wd" style="background:#f5a623"></div><div class="wd" style="background:var(--gr)"></div></div>
+        <span class="wt" id="gen-code-title">Generated Code</span>
+        <div style="display:flex;gap:6px">
+          <button class="wbtn" onclick="genCopyCode()">&#128203; Copy</button>
+          <button class="wbtn" onclick="genDownloadCode()" style="color:var(--gr2)">&#8595; Download</button>
+          <button class="wbtn" onclick="genTestInLabs()" style="color:var(--pu2);border-color:rgba(124,106,247,.3)">&#9654; Test in Labs</button>
+          <button class="wbtn" onclick="showQuickPkg()" style="color:var(--gr2);border-color:rgba(61,214,140,.3)">&#128241; Package</button>
+        </div>
+      </div>
+      <pre id="gen-code-output" style="padding:16px;font-size:11px;color:var(--gr2);white-space:pre-wrap;word-break:break-word;max-height:400px;overflow-y:auto;line-height:1.7;font-family:'IBM Plex Mono',monospace;margin:0;background:var(--bg3)">Code will appear here...</pre>
+    </div>
+
+    <!-- APK / Package quick-launch — shown after code is generated -->
+    <div id="quick-pkg-bar" style="display:none;background:var(--bg2);border:1px solid rgba(61,214,140,.2);border-radius:10px;padding:12px 16px;margin-bottom:14px;display:none">
+      <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+        <span style="font-size:9px;color:var(--gr2);letter-spacing:2px;text-transform:uppercase;font-weight:700">&#128241; Package this app as:</span>
+        <button onclick="quickPkg('apk')" style="padding:7px 18px;border-radius:8px;background:rgba(61,214,140,.1);border:1px solid rgba(61,214,140,.3);color:var(--gr2);font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:1.5px;cursor:pointer;transition:all .2s;text-transform:uppercase">&#128241; APK</button>
+        <button onclick="quickPkg('exe')" style="padding:7px 18px;border-radius:8px;background:rgba(124,106,247,.08);border:1px solid rgba(124,106,247,.25);color:var(--pu2);font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:1.5px;cursor:pointer;transition:all .2s;text-transform:uppercase">&#128187; EXE</button>
+        <button onclick="quickPkg('docker')" style="padding:7px 18px;border-radius:8px;background:rgba(75,158,255,.08);border:1px solid rgba(75,158,255,.25);color:var(--bl2);font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:1.5px;cursor:pointer;transition:all .2s;text-transform:uppercase">&#127959; Docker</button>
+        <button onclick="quickPkg('zip')" style="padding:7px 18px;border-radius:8px;background:rgba(245,166,35,.08);border:1px solid rgba(245,166,35,.25);color:var(--or);font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:1.5px;cursor:pointer;transition:all .2s;text-transform:uppercase">&#128230; ZIP</button>
+        <span style="font-size:9px;color:var(--tx3);margin-left:auto">Packages the /output folder</span>
+      </div>
+      <!-- Inline progress bar for quick packaging -->
+      <div id="qpkg-progress" style="display:none;margin-top:10px">
+        <div style="display:flex;justify-content:space-between;margin-bottom:4px">
+          <span id="qpkg-step" style="font-size:9px;color:var(--tx2)">Starting...</span>
+          <span id="qpkg-pct" style="font-size:9px;color:var(--pu2)">0%</span>
+        </div>
+        <div style="height:5px;background:var(--bg4);border-radius:3px;overflow:hidden">
+          <div id="qpkg-bar" style="height:100%;width:0%;background:linear-gradient(90deg,var(--gr),var(--bl));border-radius:3px;transition:width .4s ease"></div>
+        </div>
+        <div id="qpkg-done" style="display:none;margin-top:8px;display:flex;align-items:center;gap:8px">
+          <span style="color:var(--gr2);font-size:10px">&#10003; Package ready</span>
+          <button onclick="qpkgDownload()" style="padding:4px 14px;border-radius:6px;background:var(--gr);border:none;color:#000;font-family:'IBM Plex Mono',monospace;font-size:9px;cursor:pointer;font-weight:700">&#8595; Download</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Plan preview (full project) -->
+    <div id="plan-preview" style="background:var(--bg3);border:1px solid rgba(61,214,140,.25);border-radius:10px;padding:14px;margin-bottom:16px;display:none">
+      <div style="font-family:'Outfit',sans-serif;font-size:13px;font-weight:700;color:var(--gr2);margin-bottom:10px">&#10003; Project Plan Generated</div>
+      <div id="pp-rows"></div>
+      <button id="startbtn-prompt" onclick="startFromPrompt()" style="width:100%;padding:14px;border-radius:10px;background:linear-gradient(135deg,var(--pu),var(--pu2));border:none;color:#fff;font-family:'Outfit',sans-serif;font-size:14px;font-weight:700;letter-spacing:2px;cursor:pointer;transition:all .2s;margin-top:12px">&#9889; PLAN &amp; BUILD (Full Multi-file Project)</button>
+    </div>
+  </div>
+
+  <!-- JSON MODE -->
+  <div id="input-json-mode" style="display:none;margin-bottom:16px">
+    <div class="upzone" id="upzone" onclick="document.getElementById('finput').click()" ondragover="dragOv(event)" ondragleave="dragLv()" ondrop="dropF(event)">
+      <svg class="upicon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+      <div class="uptitle" id="uptitle">Drop your project JSON here</div>
+      <div class="upsub" id="upsub">or click to browse &middot; .json only</div>
+    </div>
+    <input type="file" id="finput" accept=".json" onchange="selFile(event)">
+    <div class="win" style="margin-top:14px">
+      <div class="wtb"><div class="wds"><div class="wd" style="background:#f05252"></div><div class="wd" style="background:#f5a623"></div><div class="wd" style="background:var(--gr)"></div></div><span class="wt">Loaded Project</span><span class="wb wbd" id="projbadge">NONE</span></div>
+      <div style="padding:18px" id="projbody"><div style="text-align:center;padding:20px 0;color:var(--tx3);font-size:10px">No project loaded yet</div></div>
+      <div style="padding:0 18px 18px"><button class="startbtn" id="startbtn" onclick="startProj()" disabled>&#9889; START PROJECT</button></div>
+    </div>
+  </div>
+
+  <!-- ASSISTANT CHAT — full width below prompt area -->
+  <div class="sl">CODE MODIFIER — Ask for a specific change</div>
+  <div style="background:var(--bg2);border:1px solid var(--bd);border-radius:13px;overflow:hidden;display:flex;flex-direction:column">
+    <div class="wtb">
+      <div class="wds"><div class="wd" style="background:#f05252"></div><div class="wd" style="background:#f5a623"></div><div class="wd" style="background:var(--gr)"></div></div>
+      <span class="wt">Feature Modifier</span>
+      <span class="wb wbp">SURGICAL EDIT — only the requested feature changes</span>
+    </div>
+    <!-- Context hint -->
+    <div style="padding:9px 14px;border-bottom:1px solid var(--bd);font-size:9px;color:var(--tx3);letter-spacing:.5px;line-height:1.6">
+      Ask for a <strong style="color:var(--pu2)">specific feature change</strong> to the code in the left panel above (scratchpad or generated code).
+      Only that feature will be modified — everything else stays the same.
+      Example: "add a dark mode toggle", "add input validation to the form", "add a reset button"
+    </div>
+    <div class="chatmsgs" id="chatmsgs" style="height:220px">
+      <div class="cmsg bot">Paste or generate code in the panel above, then ask me to add or change a specific feature here. I'll modify only what you ask — the rest of the code stays untouched.</div>
+    </div>
+    <div class="chatfoot">
+      <textarea class="chatinput" id="chatinput" placeholder="e.g. add a dark mode toggle, add form validation, change button color to green..." rows="1" onkeydown="chatKD(event)"></textarea>
+      <button class="chatsend" onclick="sendFeatureEdit()" title="Apply feature change to code above">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ====== SETTINGS PAGE ====== -->
+<div class="page" id="page-settings">
+  <div class="ph"><div><div class="pt">KAT<span class="ac">A</span>LYST <span style="color:var(--tx2);font-size:15px;font-weight:500">/ Settings</span></div><div class="ps">CONFIGURE - API KEYS - PREFERENCES</div></div></div>
+  <div class="sgrid">
+
+    <!-- API KEYS CARD -->
+    <div class="scard">
+      <div class="scardtitle"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--pu2)" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>API Keys</div>
+      <div class="scardbody">
+        <!-- Global keys toggle -->
+        <div class="togglerow" style="margin-bottom:14px;padding-bottom:14px">
+          <div>
+            <div class="tglbl" style="color:var(--pu2);font-weight:600">Use System Keys</div>
+            <div class="tgsub">ON = use built-in keys &nbsp;|&nbsp; OFF = enter your own</div>
+          </div>
+          <div class="tgl" id="tgl-global" onclick="togSet('global')"></div>
+        </div>
+        <!-- Banner shown when global keys ON -->
+        <div class="gkey-banner" id="gkey-banner" style="display:none">&#10003; Using system API keys &mdash; chat and project start are ready to use.</div>
+        <!-- User key inputs shown when global keys OFF -->
+        <div id="user-keys-section">
+          <div class="srow"><label class="slbl">Cerebras API Key (Primary)</label><input type="password" class="sinput" id="s-ckey" placeholder="your cerebras key..."><div class="kstat" id="gstat"></div></div>
+          <div class="srow"><label class="slbl">Groq API Key (Backup)</label><input type="password" class="sinput" id="s-rkey" placeholder="gsk_..."><div class="kstat" id="rstat"></div></div>
+        </div>
+        <div class="srow"><label class="slbl">Primary Model (Cerebras)</label>
+          <select class="sselect" id="s-pmodel"><option value="gpt-oss-120b">gpt-oss-120b (recommended)</option><option value="llama3.1-8b">llama3.1-8b (faster, lighter)</option></select></div>
+        <div class="srow"><label class="slbl">Backup Model (Groq)</label>
+          <select class="sselect" id="s-bmodel"><option value="llama-3.3-70b-versatile">llama-3.3-70b-versatile</option><option value="llama-3.1-8b-instant">llama-3.1-8b-instant</option><option value="mixtral-8x7b-32768">mixtral-8x7b-32768</option></select></div>
+        <button class="savebtn" onclick="saveSec('keys')">Save API Settings</button>
+      </div>
+    </div>
+
+    <!-- DISPLAY CARD -->
+    <div class="scard">
+      <div class="scardtitle"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--bl2)" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>Display &amp; Interface</div>
+      <div class="scardbody">
+        <div class="togglerow"><div><div class="tglbl">Mobile Mode</div><div class="tgsub">Single column layout, hides sidebar, shows bottom nav</div></div><div class="tgl" id="tgl-mob" onclick="togSet('mob')"></div></div>
+        <div class="togglerow"><div><div class="tglbl">Auto Refresh</div><div class="tgsub">Poll server every few seconds for live updates</div></div><div class="tgl on" id="tgl-ar" onclick="togSet('ar')"></div></div>
+        <div class="togglerow"><div><div class="tglbl">Desktop Notifications</div><div class="tgsub">Alert when tasks complete or fail</div></div><div class="tgl on" id="tgl-notif" onclick="togSet('notif')"></div></div>
+        <div class="srow" style="margin-top:14px"><label class="slbl">Poll Interval</label>
+          <select class="sselect" id="s-poll"><option value="1">1 second</option><option value="2" selected>2 seconds (default)</option><option value="5">5 seconds</option><option value="10">10 seconds (battery saver)</option></select></div>
+        <button class="savebtn" onclick="saveSec('disp')">Save Display</button>
+      </div>
+    </div>
+
+    <!-- AI BEHAVIOUR CARD -->
+    <div class="scard">
+      <div class="scardtitle"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--gr2)" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>AI Behaviour</div>
+      <div class="scardbody">
+        <div class="srow"><label class="slbl">Max Retries Per Task</label>
+          <select class="sselect" id="s-retries"><option value="1">1 attempt</option><option value="2">2 attempts</option><option value="3" selected>3 attempts (default)</option><option value="5">5 attempts</option></select></div>
+        <div class="srow"><label class="slbl">Parallel Coders</label>
+          <select class="sselect" id="s-parallel"><option value="1">1 — sequential (safe)</option><option value="2">2 — balanced</option><option value="3" selected>3 — max speed (default)</option></select></div>
+        <div class="togglerow"><div><div class="tglbl">Enforce CODER_RULES.md</div><div class="tgsub">Pass your style rules on every task</div></div><div class="tgl on" id="tgl-cr" onclick="togSet('cr')"></div></div>
+        <div class="togglerow"><div><div class="tglbl">Memory Learning</div><div class="tgsub">Save errors and fixes to avoid repeating</div></div><div class="tgl on" id="tgl-mem" onclick="togSet('mem')"></div></div>
+        <div class="togglerow"><div><div class="tglbl">GitHub Auto-Sync</div><div class="tgsub">Push logs and output every 10 seconds</div></div><div class="tgl on" id="tgl-sync" onclick="togSet('sync')"></div></div>
+        <div style="font-size:9px;color:var(--tx3);letter-spacing:2px;text-transform:uppercase;margin:12px 0 6px">Agent Enable/Disable</div>
+        <div class="togglerow"><div><div class="tglbl" style="color:#9b8dff">Orchestrator</div><div class="tgsub">Master controller — disable stops all builds</div></div><div class="tgl on" id="tgl-agent-orchestrator" onclick="togSet('agent-orchestrator')"></div></div>
+        <div class="togglerow"><div><div class="tglbl" style="color:#4b9eff">Planner</div><div class="tgsub">Converts prompts to build plans</div></div><div class="tgl on" id="tgl-agent-planner" onclick="togSet('agent-planner')"></div></div>
+        <div class="togglerow"><div><div class="tglbl" style="color:#3dd68c">Coder</div><div class="tgsub">Writes all code — required for builds</div></div><div class="tgl on" id="tgl-agent-coder" onclick="togSet('agent-coder')"></div></div>
+        <div class="togglerow"><div><div class="tglbl" style="color:#f5a623">Reviewer</div><div class="tgsub">Reviews every file — disable skips QA</div></div><div class="tgl on" id="tgl-agent-reviewer" onclick="togSet('agent-reviewer')"></div></div>
+        <div class="togglerow"><div><div class="tglbl" style="color:#f05252">Debugger</div><div class="tgsub">Fixes failed reviews — disable skips fixing</div></div><div class="tgl on" id="tgl-agent-debugger" onclick="togSet('agent-debugger')"></div></div>
+        <button class="savebtn" onclick="saveSec('ai')">Save AI Settings</button>
+      </div>
+    </div>
+
+    <!-- DANGER ZONE CARD -->
+    <div class="scard">
+      <div class="scardtitle"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--re)" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>Danger Zone</div>
+      <div class="scardbody">
+        <div style="font-size:10px;color:var(--tx3);margin-bottom:14px;line-height:1.6">These actions cannot be undone.</div>
+        <button class="dbtn" onclick="danger('logs')">Clear Activity Logs</button>
+        <button class="dbtn" onclick="danger('memory')">Clear AI Memory</button>
+        <button class="dbtn" onclick="danger('output')">Delete Output Files</button>
+        <button class="dbtn" onclick="danger('project')" style="border-color:rgba(240,82,82,.5);color:var(--re)">Unload Current Project</button>
+        <div style="margin-top:14px;padding:12px;background:var(--bg3);border-radius:8px;font-size:10px;color:var(--tx3);line-height:1.8">
+          Memory: <span id="inf-mem" style="color:var(--pu2)">-</span> &nbsp;|&nbsp; Files: <span id="inf-files" style="color:var(--pu2)">-</span><br>
+          Server: <span id="inf-srv" style="color:var(--gr2)">Connecting...</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+
+<!-- ====== LABS PAGE ====== -->
+<div class="page" id="page-labs">
+  <div class="ph">
+    <div><div class="pt">KAT<span class="ac">A</span>LYST <span style="color:var(--tx2);font-size:15px;font-weight:500">/ Labs</span></div><div class="ps">PASTE · RUN · VIEW OUTPUT FILES</div></div>
+    <div id="labs-key-badge" style="font-size:9px;padding:6px 14px;border-radius:20px;background:var(--bg2);border:1px solid var(--bd);color:var(--tx3);letter-spacing:1px">Checking...</div>
+  </div>
+  <div id="labs-keyalert" class="keyalert">No API keys found. Add CEREBRAS_KEY or GROQ_KEY to your .env file and restart server.py.</div>
+
+  <!-- PASTE & RUN SECTION -->
+  <div class="sl">PASTE &amp; RUN</div>
+  <div class="win" style="margin-bottom:18px">
+    <div class="wtb">
+      <div class="wds"><div class="wd" style="background:#f05252"></div><div class="wd" style="background:#f5a623"></div><div class="wd" style="background:var(--gr)"></div></div>
+      <span class="wt">Code Scratchpad</span>
+      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+        <select class="lang-sel" id="lab-lang" style="font-size:10px" onchange="labLangChanged()">
+          <option value="Python">Python</option>
+          <option value="HTML">HTML / JS (Live Preview)</option>
+          <option value="JavaScript">JavaScript</option>
+          <option value="Bash">Bash</option>
+        </select>
+        <button class="lab-run" id="lab-run-btn" onclick="labsRun()" style="padding:6px 18px;font-size:9px">&#9889; Run</button>
+        <button class="wbtn" onclick="labsClear()">Clear</button>
+      </div>
+    </div>
+    <!-- Quick prompts -->
+    <div style="padding:8px 15px;border-bottom:1px solid var(--bd);display:flex;flex-wrap:wrap;gap:5px">
+      <span style="font-size:9px;color:var(--tx3);letter-spacing:1px;align-self:center;margin-right:4px">QUICK:</span>
+      <button class="mtab" onclick="labQuick('A snake game in HTML/JS using canvas. Dark background, green snake, keyboard controls')">🐍 Snake Game</button>
+      <button class="mtab" onclick="labQuick('A calculator app in HTML/CSS/JS with dark theme, button grid, and history')">🔢 Calculator</button>
+      <button class="mtab" onclick="labQuick('A todo list app in HTML/JS with add, complete, and delete functionality. Dark theme')">✅ Todo App</button>
+      <button class="mtab" onclick="labQuick('Write a Python function that reads a CSV file and prints column summaries')">CSV Reader</button>
+      <button class="mtab" onclick="labQuick('Write a Python class for reading and writing JSON files with error handling')">JSON Handler</button>
+    </div>
+    <!-- Two column: code | output+preview tabs -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:0;border-bottom:1px solid var(--bd)" class="labs-scratch-cols">
+      <div style="border-right:1px solid var(--bd)">
+        <div style="padding:8px 14px;border-bottom:1px solid var(--bd);font-size:9px;color:var(--tx3);letter-spacing:2px">CODE — Paste or describe</div>
+        <textarea class="lab-ta" id="lab-input" placeholder="Paste your code here and hit ⚡ Run...&#10;&#10;Or just describe what you want in plain English and hit Run — AI will generate it for you!" style="min-height:260px;border:none;border-radius:0;resize:none;width:100%"></textarea>
+      </div>
+      <div style="display:flex;flex-direction:column">
+        <!-- Output / Preview tab strip -->
+        <div style="display:flex;border-bottom:1px solid var(--bd)">
+          <button id="scratch-tab-output" onclick="scratchTab('output')" style="background:transparent;border:none;border-bottom:2px solid var(--pu);padding:8px 14px;font-size:9px;letter-spacing:1px;color:var(--pu2);cursor:pointer;font-family:'IBM Plex Mono',monospace">Output</button>
+          <button id="scratch-tab-preview" onclick="scratchTab('preview')" style="background:transparent;border:none;border-bottom:2px solid transparent;padding:8px 14px;font-size:9px;letter-spacing:1px;color:var(--tx3);cursor:pointer;font-family:'IBM Plex Mono',monospace">Live Preview</button>
+          <button onclick="scratchFullscreen()" style="background:transparent;border:none;border-bottom:2px solid transparent;padding:8px 14px;font-size:9px;letter-spacing:1px;color:var(--gr2);cursor:pointer;font-family:'IBM Plex Mono',monospace;opacity:.7" title="Open preview in fullscreen">&#9974;</button>
+          <span style="margin-left:auto;padding:8px 12px;font-size:9px;color:var(--tx3)" id="lab-stats"></span>
+        </div>
+        <div id="scratch-output-panel" style="flex:1">
+          <pre class="lab-result empty" id="lab-output" style="min-height:240px;border:none;border-radius:0;max-height:none;margin:0">Result will appear here...</pre>
+        </div>
+        <div id="scratch-preview-panel" style="display:none;flex:1">
+          <iframe id="scratch-iframe" sandbox="allow-scripts allow-same-origin allow-forms" style="width:100%;height:260px;border:none;background:#fff"></iframe>
+        </div>
+      </div>
+    </div>
+    <div style="padding:10px 15px;display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+      <button class="lab-copy" onclick="labsCopy()">Copy Output</button>
+      <button class="lab-copy" onclick="labsCopyInput()">Copy Code</button>
+      <button class="lab-copy" onclick="labsSendToFile()" style="color:var(--pu2);border-color:rgba(124,106,247,.3)">&#8659; Load into File Viewer</button>
+    </div>
+  </div>
+
+  <!-- FILE VIEWER SECTION -->
+  <div class="sl">OUTPUT FILE VIEWER</div>
+  <div class="win" style="margin-bottom:18px">
+    <div class="wtb">
+      <div class="wds"><div class="wd" style="background:#f05252"></div><div class="wd" style="background:#f5a623"></div><div class="wd" style="background:var(--gr)"></div></div>
+      <span class="wt">Generated Files</span>
+      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+        <select id="lv-file-sel" class="lang-sel" style="min-width:200px" onchange="lvLoadFile(this.value)"><option value="">— select a file —</option></select>
+        <button class="wbtn" onclick="lvRefreshFiles()">&#8635; Refresh</button>
+        <button class="wbtn" id="lv-run-btn" onclick="lvRunFile()" style="display:none">&#9889; Run</button>
+        <button class="wbtn" id="lv-dl-btn" onclick="lvDownload()" style="display:none">&#8595; Download</button>
+      </div>
+    </div>
+    <div style="display:flex;border-bottom:1px solid var(--bd)">
+      <button id="lv-tab-code" onclick="lvTab('code')" style="background:transparent;border:none;border-bottom:2px solid var(--pu);padding:10px 18px;font-size:10px;letter-spacing:1px;color:var(--pu2);cursor:pointer;font-family:'IBM Plex Mono',monospace">Code</button>
+      <button id="lv-tab-run" onclick="lvTab('run')" style="background:transparent;border:none;border-bottom:2px solid transparent;padding:10px 18px;font-size:10px;letter-spacing:1px;color:var(--tx3);cursor:pointer;font-family:'IBM Plex Mono',monospace">Run Output</button>
+      <button id="lv-tab-preview" onclick="lvTab('preview')" style="background:transparent;border:none;border-bottom:2px solid transparent;padding:10px 18px;font-size:10px;letter-spacing:1px;color:var(--tx3);cursor:pointer;font-family:'IBM Plex Mono',monospace">Preview</button>
+    </div>
+    <div id="lv-code-panel">
+      <pre id="lv-code" style="padding:16px;font-size:11px;color:var(--tx2);white-space:pre-wrap;word-break:break-word;max-height:480px;overflow-y:auto;line-height:1.7;font-family:'IBM Plex Mono',monospace;margin:0">Select a file above to view its contents.</pre>
+    </div>
+    <div id="lv-run-panel" style="display:none;padding:16px">
+      <pre id="lv-run-out" style="font-size:11px;color:var(--gr2);white-space:pre-wrap;word-break:break-word;max-height:380px;overflow-y:auto;line-height:1.6;font-family:'IBM Plex Mono',monospace;margin:0">Hit &#9889; Run to execute the selected file...</pre>
+      <div style="margin-top:8px;font-size:9px;color:var(--tx3)" id="lv-run-meta"></div>
+    </div>
+    <div id="lv-preview-panel" style="display:none">
+      <iframe id="lv-iframe" sandbox="allow-scripts allow-same-origin" style="width:100%;height:480px;border:none;background:#fff"></iframe>
+    </div>
+    <div style="padding:10px 16px;border-top:1px solid var(--bd);display:flex;gap:8px;align-items:center">
+      <button class="lab-copy" onclick="lvCopyCode()">Copy Code</button>
+      <button class="lab-copy" onclick="lvSendToScratchpad()" style="color:var(--pu2);border-color:rgba(124,106,247,.3)">&#8657; Edit in Scratchpad</button>
+      <button class="lab-copy" id="lv-fullscreen-btn" onclick="lvFullscreen()" style="display:none;color:var(--gr2);border-color:rgba(61,214,140,.3)">&#9974; Fullscreen Preview</button>
+      <span style="font-size:9px;color:var(--tx3)" id="lv-file-meta"></span>
+    </div>
+  </div>
+</div>
+
+
+<!-- ====== AGENTS PAGE ====== -->
+<div class="page" id="page-agents">
+  <div class="ph">
+    <div><div class="pt">KAT<span class="ac">A</span>LYST <span style="color:var(--tx2);font-size:15px;font-weight:500">/ Agents</span></div><div class="ps">LIVE AGENT COMMAND CENTER</div></div>
+    <button class="wbtn" onclick="pollAgents()">&#8635; Refresh</button>
+  </div>
+  <div class="sl">AGENT STATUS</div>
+  <div class="agent-cards">
+    <div class="acard"><div class="acard-name" style="color:#9b8dff">Orchestrator</div><div class="acard-status"><div class="adot" id="ad-orchestrator"></div><span id="as-orchestrator" style="font-size:10px;color:var(--tx2)">Idle</span></div><div class="acard-task" id="at-orchestrator">—</div><div id="am-orchestrator" class="acard-model" style="font-size:8px;color:var(--tx3);margin-top:4px">🧠 Primary: Groq llama-3.3-70b</div></div>
+    <div class="acard"><div class="acard-name" style="color:#4b9eff">Planner</div><div class="acard-status"><div class="adot" id="ad-planner"></div><span id="as-planner" style="font-size:10px;color:var(--tx2)">Idle</span></div><div class="acard-task" id="at-planner">—</div><div id="am-planner" class="acard-model" style="font-size:8px;color:var(--tx3);margin-top:4px">🧠 Primary: SambaNova gpt-oss-120b</div></div>
+    <div class="acard"><div class="acard-name" style="color:#3dd68c">Coder</div><div class="acard-status"><div class="adot" id="ad-coder"></div><span id="as-coder" style="font-size:10px;color:var(--tx2)">Idle</span></div><div class="acard-task" id="at-coder">—</div><div id="am-coder" class="acard-model" style="font-size:8px;color:var(--tx3);margin-top:4px">🧠 Primary: Cerebras gpt-oss-120b</div></div>
+    <div class="acard"><div class="acard-name" style="color:#f5a623">Reviewer</div><div class="acard-status"><div class="adot" id="ad-reviewer"></div><span id="as-reviewer" style="font-size:10px;color:var(--tx2)">Idle</span></div><div class="acard-task" id="at-reviewer">—</div><div id="am-reviewer" class="acard-model" style="font-size:8px;color:var(--tx3);margin-top:4px">🧠 Primary: Mistral Codestral</div></div>
+    <div class="acard"><div class="acard-name" style="color:#f05252">Debugger</div><div class="acard-status"><div class="adot" id="ad-debugger"></div><span id="as-debugger" style="font-size:10px;color:var(--tx2)">Idle</span></div><div class="acard-task" id="at-debugger">—</div><div id="am-debugger" class="acard-model" style="font-size:8px;color:var(--tx3);margin-top:4px">🧠 Primary: Cerebras gpt-oss-120b</div></div>
+    <div class="acard"><div class="acard-name" style="color:#22d3ee">Tester</div><div class="acard-status"><div class="adot" id="ad-tester"></div><span id="as-tester" style="font-size:10px;color:var(--tx2)">Idle</span></div><div class="acard-task" id="at-tester">—</div><div id="am-tester" class="acard-model" style="font-size:8px;color:var(--tx3);margin-top:4px">🔬 Runtime execution · 10s timeout</div></div>
+  </div>
+  <div class="sl">AGENT CONVERSATION</div>
+  <div class="chat-feed">
+    <div class="wtb"><div class="wds"><div class="wd" style="background:#f05252"></div><div class="wd" style="background:#f5a623"></div><div class="wd" style="background:var(--gr)"></div></div><span class="wt">Live Feed</span><span class="wb wbp" id="cf-count">0 MESSAGES</span></div>
+    <div class="cf-filters">
+      <button class="cf-filter on" onclick="filterAgentChat(this,'all')">All</button>
+      <button class="cf-filter" onclick="filterAgentChat(this,'orchestrator')" style="color:#9b8dff">Orchestrator</button>
+      <button class="cf-filter" onclick="filterAgentChat(this,'planner')" style="color:#4b9eff">Planner</button>
+      <button class="cf-filter" onclick="filterAgentChat(this,'coder')" style="color:#3dd68c">Coder</button>
+      <button class="cf-filter" onclick="filterAgentChat(this,'reviewer')" style="color:#f5a623">Reviewer</button>
+      <button class="cf-filter" onclick="filterAgentChat(this,'debugger')" style="color:#f05252">Debugger</button>
+      <button class="cf-filter" onclick="filterAgentChat(this,'tester')" style="color:#22d3ee">Tester</button>
+      <button class="cf-filter" onclick="filterAgentChat(this,'validator')" style="color:#e879f9">Validator</button>
+    </div>
+    <div class="chat-feed-body" id="agent-chat-body">
+      <div style="color:var(--tx3);font-size:10px;padding:20px;text-align:center">No agent activity yet — start a project to see the conversation</div>
+    </div>
+  </div>
+  <div class="sl">ORCHESTRATOR CONTROLS</div>
+  <div class="agent-ctrl">
+    <div class="wtb"><div class="wds"><div class="wd" style="background:#f05252"></div><div class="wd" style="background:#f5a623"></div><div class="wd" style="background:var(--gr)"></div></div><span class="wt">Control Panel</span></div>
+    <div class="agent-ctrl-body">
+      <input class="ctrl-inp" id="ctrl-task-id" placeholder="Task ID (e.g. 1.1)">
+      <input class="ctrl-inp" id="ctrl-filename" placeholder="Filename (e.g. api.py)">
+      <button class="ctrl-btn" onclick="ctrlRerun()">&#8635; Re-run Task</button>
+      <button class="ctrl-btn" onclick="ctrlForceReview()">&#9654; Force Re-review</button>
+      <button class="ctrl-btn" onclick="ctrlInject()">&#9656; Inject Message</button>
+      <button class="ctrl-btn" style="color:#f8a0a0;border-color:rgba(240,82,82,.3)" onclick="doStop()">&#9632; Emergency Stop</button>
+    </div>
+  </div>
+  <div class="sl" style="margin-top:18px">AGENT STATS</div>
+  <div style="display:grid;grid-template-columns:repeat(6,1fr);gap:10px;margin-bottom:18px" id="agent-stats-grid">
+    <div class="win" style="padding:14px" id="stat-orchestrator"><div style="font-size:9px;color:#9b8dff;letter-spacing:2px;text-transform:uppercase;margin-bottom:8px">Orchestrator</div><div style="font-size:9px;color:var(--tx3)">Loading...</div></div>
+    <div class="win" style="padding:14px" id="stat-planner"><div style="font-size:9px;color:#4b9eff;letter-spacing:2px;text-transform:uppercase;margin-bottom:8px">Planner</div><div style="font-size:9px;color:var(--tx3)">Loading...</div></div>
+    <div class="win" style="padding:14px" id="stat-coder"><div style="font-size:9px;color:#3dd68c;letter-spacing:2px;text-transform:uppercase;margin-bottom:8px">Coder</div><div style="font-size:9px;color:var(--tx3)">Loading...</div></div>
+    <div class="win" style="padding:14px" id="stat-reviewer"><div style="font-size:9px;color:#f5a623;letter-spacing:2px;text-transform:uppercase;margin-bottom:8px">Reviewer</div><div style="font-size:9px;color:var(--tx3)">Loading...</div></div>
+    <div class="win" style="padding:14px" id="stat-debugger"><div style="font-size:9px;color:#f05252;letter-spacing:2px;text-transform:uppercase;margin-bottom:8px">Debugger</div><div style="font-size:9px;color:var(--tx3)">Loading...</div></div>
+    <div class="win" style="padding:14px" id="stat-tester"><div style="font-size:9px;color:#22d3ee;letter-spacing:2px;text-transform:uppercase;margin-bottom:8px">Tester</div><div style="font-size:9px;color:var(--tx3)">Loading...</div></div>
+  </div>
+</div>
+
+</main>
+
+<!-- FILE VIEWER MODAL -->
+<div class="modal-bg" id="filemodal" onclick="if(event.target===this)this.classList.remove('on')">
+  <div class="modal-box">
+    <div class="modal-hdr">
+      <span class="modal-title" id="modal-filename">file</span>
+      <button class="modal-close" onclick="document.getElementById('filemodal').classList.remove('on')">&#10005;</button>
+    </div>
+    <pre class="modal-code" id="modal-code">Loading...</pre>
+    <div class="modal-foot">
+      <button class="lab-copy" onclick="navigator.clipboard.writeText(document.getElementById('modal-code').textContent).then(function(){toast('Copied','ok');})">Copy Code</button>
+      <button class="lab-copy" style="color:var(--bl2);border-color:rgba(75,158,255,.25)" onclick="window.open(API+'/api/download/'+currentFileEnc)">Download</button>
+    </div>
+  </div>
+</div>
+
+<!-- FULLSCREEN PREVIEW MODAL — for Labs file viewer -->
+<div id="fullscreen-modal" style="position:fixed;inset:0;background:#000;z-index:950;display:none;flex-direction:column">
+  <div style="height:42px;background:#0b0e18;border-bottom:1px solid var(--bd);display:flex;align-items:center;gap:10px;padding:0 14px;flex-shrink:0">
+    <span id="fs-modal-title" style="font-size:11px;color:var(--tx2);flex:1;font-family:'IBM Plex Mono',monospace;letter-spacing:1px">Preview</span>
+    <span style="font-size:9px;color:var(--tx3);letter-spacing:1px">ESC or click × to close</span>
+    <button onclick="closeFullscreen()" style="padding:5px 14px;border-radius:6px;background:rgba(240,82,82,.15);border:1px solid rgba(240,82,82,.3);color:#f8a0a0;font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:1.5px;cursor:pointer;transition:all .15s;text-transform:uppercase">&#10005; Close</button>
+  </div>
+  <iframe id="fs-iframe" sandbox="allow-scripts allow-same-origin allow-forms" style="flex:1;width:100%;border:none;background:#fff"></iframe>
+</div>
+
+<!-- FLOATING ISLAND (desktop) -->
+<div class="iwrap">
+  <div class="island">
+    <div class="istat"><div class="idot" id="idot" style="background:var(--gr)"></div><span class="ilbl" id="ilbl" style="color:var(--gr2)">RUNNING</span></div>
+    <div class="isep"></div>
+    <button class="ibtn ibtn-pause" id="btnpause" onclick="doPause()">
+      <svg id="pico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
+      <span id="plbl">Pause</span>
+    </button>
+    <button class="ibtn ibtn-stop" onclick="doStop()">
+      <svg viewBox="0 0 24 24" fill="currentColor"><rect x="4" y="4" width="16" height="16" rx="2"/></svg>E-Stop
+    </button>
+    <button class="ibtn ibtn-reset" onclick="doReset()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-4.5"/></svg>Reset
+    </button>
+    <div class="isep"></div>
+    <div class="itime" id="itime">00:00:00</div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+var API = '';
+
+/* ---- CLOCK ---- */
+function tick(){
+  var t = new Date().toTimeString().slice(0,8);
+  var ec = document.getElementById('clock'), ei = document.getElementById('itime');
+  if(ec) ec.textContent = t;
+  if(ei) ei.textContent = t;
+}
+tick(); setInterval(tick, 1000);
+
+/* ---- CHARTS ---- */
+function mkChart(id, col, fill){
+  return new Chart(document.getElementById(id), {
+    type: 'line',
+    data: { labels: Array.from({length:60},(_,i)=>i), datasets:[{data:Array(60).fill(0), borderColor:col, borderWidth:2, backgroundColor:fill, fill:true, tension:.35, pointRadius:0}] },
+    options: { responsive:true, maintainAspectRatio:false, animation:{duration:0},
+      plugins:{ legend:{display:false}, tooltip:{callbacks:{label:c=>Math.round(c.parsed.y)+'%'}} },
+      scales:{ x:{display:false}, y:{min:0,max:100, grid:{color:'rgba(255,255,255,0.04)'}, ticks:{color:'#4a5568',font:{size:9},callback:v=>v+'%',maxTicksLimit:5}, border:{display:false}} } }
+  });
+}
+var CC = mkChart('cpuChart','#7c6af7','rgba(124,106,247,0.12)');
+var RC = mkChart('ramChart','#4b9eff','rgba(75,158,255,0.12)');
+function pushC(ch, v){ ch.data.datasets[0].data.push(Math.round(v)); ch.data.datasets[0].data.shift(); ch.update('none'); }
+function avg(a){ return Math.round(a.reduce((x,y)=>x+y,0)/a.length); }
+function pk(a){ return Math.max(...a); }
+function updStats(cv, rv){
+  var cd=CC.data.datasets[0].data, rd=RC.data.datasets[0].data;
+  document.getElementById('cpu-m').textContent=cv+'%'; document.getElementById('ram-m').textContent=rv+'%';
+  document.getElementById('cc').textContent=cv+'%'; document.getElementById('ca').textContent=avg(cd)+'%'; document.getElementById('cp').textContent=pk(cd)+'%';
+  document.getElementById('rc').textContent=rv+'%'; document.getElementById('ra').textContent=avg(rd)+'%'; document.getElementById('rp').textContent=pk(rd)+'%';
+}
+
+/* ---- ISLAND STATE ---- */
+function setISt(st){
+  var map = { running:['#3dd68c','#6eeaac','RUNNING'], paused:['#f5a623','#f5a623','PAUSED'], stop:['#f05252','#f05252','STOPPED'] };
+  var m = map[st] || map.running;
+  ['idot','sb-dot'].forEach(function(id){ var e=document.getElementById(id); if(e) e.style.background=m[0]; });
+  var il=document.getElementById('ilbl'), ss=document.getElementById('sb-st'), lt=document.getElementById('ltxt');
+  if(il){ il.style.color=m[1]; il.textContent=m[2]; }
+  if(ss){ ss.style.color=m[1]; ss.textContent=m[2]; }
+  if(lt){ lt.style.color=m[1]; lt.textContent=m[2]; }
+}
+function setPBtn(paused){
+  var ico=document.getElementById('pico'), lbl=document.getElementById('plbl'), btn=document.getElementById('btnpause');
+  var mico=document.getElementById('m-pico'), mlbl=document.getElementById('m-plbl');
+  if(paused){
+    if(ico) ico.innerHTML='<polygon points="5 3 19 12 5 21 5 3" fill="currentColor"/>';
+    if(lbl) lbl.textContent='Resume'; if(btn) btn.classList.add('paused');
+    if(mico) mico.innerHTML='<polygon points="5 3 19 12 5 21 5 3" fill="currentColor"/>';
+    if(mlbl) mlbl.textContent='Resume';
+  } else {
+    if(ico) ico.innerHTML='<rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/>';
+    if(lbl) lbl.textContent='Pause'; if(btn) btn.classList.remove('paused');
+    if(mico) mico.innerHTML='<rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/>';
+    if(mlbl) mlbl.textContent='Pause';
+  }
+}
+
+/* ---- ISLAND BUTTON ACTIONS ---- */
+function doPause(){
+  fetch(API+'/api/pause',{method:'POST'}).then(function(r){return r.json();}).then(function(d){
+    setISt(d.state); setPBtn(d.state==='paused');
+    toast(d.state==='paused'?'Project paused':'Project resumed','info');
+  }).catch(function(){ toast('Server not reachable','err'); });
+}
+function doStop(){
+  fetch(API+'/api/stop',{method:'POST'}).then(function(r){return r.json();}).then(function(){
+    setISt('stop'); setPBtn(true); toast('Emergency stop sent','err');
+  }).catch(function(){ toast('Server not reachable','err'); });
+}
+function doReset(){
+  fetch(API+'/api/reset',{method:'POST'}).then(function(r){return r.json();}).then(function(){
+    setISt('running'); setPBtn(false); toast('Reset to running','ok');
+  }).catch(function(){ toast('Server not reachable','err'); });
+}
+
+/* ---- POLL LOOP ---- */
+var pollT = null;
+function poll(){
+  fetch(API+'/api/status').then(function(r){return r.json();}).then(function(d){
+    pushC(CC,d.cpu); pushC(RC,d.ram); updStats(d.cpu,d.ram);
+    document.getElementById('tasks-m').textContent = d.completed+' / '+d.total;
+    document.getElementById('mem-m').textContent = d.memory;
+    document.getElementById('pfill').style.width = d.pct+'%';
+    document.getElementById('ppct').textContent = d.pct+'%';
+    document.getElementById('pname').textContent = d.project||'No project loaded';
+    document.getElementById('pdone').textContent = '&#10003; '+d.completed+' Complete';
+    document.getElementById('pact').textContent = '&#8635; '+(d.active||0)+' Running';
+    document.getElementById('pfail').textContent = '&#10005; '+d.failed+' Failed';
+    document.getElementById('ppend').textContent = '&#9675; '+Math.max(0,d.total-d.completed-d.failed-(d.active||0))+' Pending';
+    // Per-phase progress pills
+    if(d.tasks && d.tasks.length){
+      var phases={}, curPhase='';
+      d.tasks.forEach(function(t){
+        if(t.type==='phase'){ curPhase=t.name; phases[curPhase]={done:0,total:0,name:t.name}; }
+        else if(curPhase){ phases[curPhase].total++; if(t.status==='complete'||t.status==='verified') phases[curPhase].done++; }
+      });
+      var pp=document.getElementById('phase-pills');
+      if(pp) pp.innerHTML=Object.values(phases).map(function(ph){
+        var pct=ph.total?Math.round(ph.done/ph.total*100):0;
+        var col=pct===100?'var(--gr2)':pct>0?'var(--pu2)':'var(--tx3)';
+        return '<span style="font-size:9px;padding:3px 9px;border-radius:20px;background:var(--bg3);border:1px solid var(--bd);color:'+col+'">'+esc(ph.name)+' '+ph.done+'/'+ph.total+'</span>';
+      }).join('');
+    }
+    setISt(d.control); setPBtn(d.control==='paused'||d.control==='stop');
+    renderTasks(d.tasks); renderLogs(d.logs); renderOut(d.output);
+    // Show package panel once any output files exist — don't gate on 0 failures
+    if(d.completed > 0 && d.total > 0){
+      var pp=document.getElementById('package-panel');
+      if(pp && pp.style.display==='none') pp.style.display='block';
+      lvRefreshFiles();
+    }
+    // Runner alive indicator
+    var lbadge = document.getElementById('ltxt');
+    if(lbadge && d.runner_alive) { lbadge.textContent = 'AGENT SYSTEM RUNNING'; }
+    if(d.mobile_mode) document.body.classList.add('mob'); else document.body.classList.remove('mob');
+    var is=document.getElementById('inf-srv'); if(is) is.textContent='Connected';
+    var im=document.getElementById('inf-mem'); if(im) im.textContent=d.memory;
+    var iff=document.getElementById('inf-files'); if(iff) iff.textContent=(d.output||[]).length;
+  }).catch(function(){
+    var is=document.getElementById('inf-srv'); if(is) is.textContent='Disconnected';
+  });
+}
+function startPoll(iv){ if(pollT) clearInterval(pollT); poll(); pollT=setInterval(poll,(iv||2)*1000); }
+startPoll(2);
+
+/* ---- RENDER HELPERS ---- */
+function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+function renderTasks(tasks){
+  if(!tasks||!tasks.length) return;
+  var el=document.getElementById('tlist'), html='';
+  document.getElementById('tcbadge').textContent = tasks.filter(function(t){return t.type==='task';}).length+' TASKS';
+  tasks.forEach(function(t){
+    if(t.type==='phase'){
+      html+='<div class="phdr">'+esc(t.name)+'</div>';
+    } else {
+      var ico, cls;
+      if(t.status==='complete'||t.status==='verified'){ico='&#10003;';cls='ts';}
+      else if(t.status==='in_progress'){ico='&#8635;';cls='ta';}
+      else if(t.status==='failed'){ico='&#10005;';cls='tf';}
+      else{ico='&#9675;';cls='tp';}
+      var desc = t.desc&&t.desc.length>45 ? t.desc.slice(0,45)+'...' : (t.desc||'');
+      html+='<div class="ti"><div class="tic '+cls+'">'+ico+'</div>'
+           +'<div class="tinfo"><div class="tid">['+esc(t.id)+']</div>'
+           +'<div class="tdesc">'+esc(desc)+'</div>'
+           +'<div class="tfile">'+esc(t.file||'')+'</div></div></div>';
+    }
+  });
+  el.innerHTML = html;
+}
+
+function renderLogs(logs){
+  if(!logs||!logs.length) return;
+  var el=document.getElementById('logb');
+  var imap={SUCCESS:'&#10003;',WARNING:'!',ERROR:'&#10005;',START:'&#9654;',INFO:'&middot;'};
+  var cmap={SUCCESS:'lis',WARNING:'liw',ERROR:'lie',START:'lib',INFO:'lii'};
+  // Agent name → color (includes tester, validator, architect, coder-N pattern)
+  var agentColors={
+    'orchestrator':'#9b8dff','planner':'#4b9eff',
+    'coder':'#3dd68c','reviewer':'#f5a623',
+    'debugger':'#f05252','tester':'#22d3ee',
+    'validator':'#e879f9','architect':'#fb923c'
+  };
+  var html='';
+  logs.forEach(function(l){
+    var msg = l.msg || '';
+    var msgLower = msg.toLowerCase();
+    // Match agent names — also catches coder-1, coder-2 etc via substring
+    var agentColor = '';
+    var matchedName = '';
+    Object.keys(agentColors).forEach(function(name){
+      if(msgLower.indexOf(name) !== -1 && name.length > (matchedName.length||0)){
+        agentColor  = agentColors[name];
+        matchedName = name;
+      }
+    });
+    var msgHtml;
+    if(agentColor && matchedName){
+      // Highlight every occurrence of any agent name in the message
+      var pattern = new RegExp('('+Object.keys(agentColors).join('|')+'(?:-\\d+)?)', 'gi');
+      msgHtml = '<span class="lm">'+esc(msg).replace(pattern, function(m){
+        var base = m.toLowerCase().replace(/-\d+$/, '');
+        var col  = agentColors[base] || agentColor;
+        return '<span style="color:'+col+';font-weight:600">'+m+'</span>';
+      })+'</span>';
+    } else {
+      msgHtml = '<span class="lm">'+esc(msg)+'</span>';
+    }
+    html+='<div class="lr"><div class="lic '+(cmap[l.level]||'lii')+'">'+(imap[l.level]||'&middot;')+'</div>'
+         +'<span class="lt">'+esc(l.time)+'</span>'+msgHtml+'</div>';
+  });
+  el.innerHTML=html; el.scrollTop=el.scrollHeight;
+}
+
+function renderOut(files){
+  var el=document.getElementById('outlist'), badge=document.getElementById('fcbadge');
+  if(badge) badge.textContent=(files||[]).length+' FILES';
+  if(!files||!files.length){ el.innerHTML='<div style="padding:24px;text-align:center;color:var(--tx3);font-size:10px">No files yet</div>'; return; }
+  var html='';
+  files.forEach(function(f){
+    var enc=encodeURIComponent(f.name);
+    html+='<div class="orow"><div class="oleft">'
+         +'<div class="oico"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9b8dff" stroke-width="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div>'
+         +'<div><div class="oname">'+esc(f.name)+'</div><div class="ometa">output/ &middot; '+f.size+' &middot; '+f.modified+'</div></div>'
+         +'</div><div style="display:flex;gap:6px">'
+         +'<button class="odl" style="color:var(--bl2);border-color:rgba(75,158,255,.25)" onclick="viewFile(\''+enc+'\')">&#128065; View</button>'
+         +'<button class="odl" onclick="window.open(API+\'/api/download/\'+\''+enc+'\')">&#8595; DL</button>'
+         +'</div></div>';
+  });
+  el.innerHTML=html;
+}
+function dlFile(enc){ window.open(API+'/api/download/'+enc); }
+
+document.getElementById('dl-log').onclick = function(){
+  var rows=document.querySelectorAll('#logb .lm');
+  var txt=Array.from(rows).map(function(r){return r.textContent;}).join('\n');
+  var a=document.createElement('a'); a.href='data:text/plain;charset=utf-8,'+encodeURIComponent(txt);
+  a.download='katalyst_log.txt'; a.click();
+};
+
+/* ---- NAVIGATION (handled in Labs section above) ---- */
+
+/* ---- INPUT PAGE ---- */
+function dragOv(e){ e.preventDefault(); document.getElementById('upzone').classList.add('drag'); }
+function dragLv(){ document.getElementById('upzone').classList.remove('drag'); }
+function dropF(e){ e.preventDefault(); dragLv(); if(e.dataTransfer.files[0]) upFile(e.dataTransfer.files[0]); }
+function selFile(e){ if(e.target.files[0]) upFile(e.target.files[0]); }
+
+function upFile(file){
+  if(!file.name.endsWith('.json')){ toast('Only .json files supported','err'); return; }
+  var zone=document.getElementById('upzone'), title=document.getElementById('uptitle'), sub=document.getElementById('upsub');
+  title.textContent='Uploading...'; sub.textContent=file.name;
+  var fd=new FormData(); fd.append('file',file);
+  fetch(API+'/api/upload',{method:'POST',body:fd})
+    .then(function(r){return r.json();})
+    .then(function(d){
+      if(d.error){ toast(d.error,'err'); title.textContent='Upload failed'; sub.textContent=d.error; return; }
+      zone.classList.add('ok');
+      title.textContent='✓ '+d.name;
+      sub.textContent=d.phases+' phases · '+d.tasks+' tasks';
+      toast('Project loaded: '+d.name,'ok');
+      loadProjInfo();
+    })
+    .catch(function(){ toast('Upload failed - is server.py running?','err'); });
+}
+
+function loadProjInfo(){
+  fetch(API+'/api/project_info')
+    .then(function(r){return r.json();})
+    .then(function(d){
+      var badge=document.getElementById('projbadge'), body=document.getElementById('projbody'), btn=document.getElementById('startbtn');
+      if(!d.loaded){
+        badge.textContent='NONE'; badge.className='wb wbd';
+        body.innerHTML='<div style="text-align:center;padding:20px 0;color:var(--tx3);font-size:10px">No project loaded yet</div>';
+        btn.disabled=true; return;
+      }
+      badge.textContent='LOADED'; badge.className='wb wbg';
+      var pct=d.total?Math.round(d.completed/d.total*100):0;
+      var rows=[['Project',d.name,'var(--pu2)'],['Type',d.type||'-','var(--tx2)'],['Phases',d.phases,'var(--bl2)'],
+               ['Total Tasks',d.total,'var(--tx2)'],['Complete',d.completed,'var(--gr2)'],
+               ['Failed',d.failed,d.failed>0?'#f8a0a0':'var(--tx3)'],['Progress',pct+'%','var(--pu2)']];
+      body.innerHTML=rows.map(function(r){
+        return '<div class="pstatrow"><span class="pstatlbl">'+r[0]+'</span><span class="pstatval" style="color:'+r[2]+'">'+esc(String(r[1]))+'</span></div>';
+      }).join('');
+      btn.disabled=false;
+    }).catch(function(){});
+}
+
+function startProj(){
+  var btn=document.getElementById('startbtn');
+  btn.disabled=true; btn.textContent='Starting...';
+  fetch(API+'/api/start',{method:'POST'})
+    .then(function(r){return r.json();})
+    .then(function(){
+      toast('Project started! Watch the Dashboard for live progress.','ok');
+      btn.textContent='⚡ START PROJECT'; btn.disabled=false;
+      goPage('dash');
+    })
+    .catch(function(){ toast('Failed - is server.py running?','err'); btn.disabled=false; btn.textContent='⚡ START PROJECT'; });
+}
+
+/* ---- FEATURE MODIFIER CHAT ---- */
+function chatKD(e){ if(e.key==='Enter'&&!e.shiftKey){ e.preventDefault(); sendFeatureEdit(); } }
+
+function sendFeatureEdit(){
+  var inp = document.getElementById('chatinput');
+  var msg = inp.value.trim();
+  if(!msg){ toast('Describe what feature to add or change','err'); return; }
+
+  // Get current code from scratchpad or generated code panel
+  var currentCode = document.getElementById('lab-input').value.trim();
+  if(!currentCode && _genCode) currentCode = _genCode;
+
+  if(!currentCode){
+    addMsg("No code found — generate or paste code in the panel above first, then ask for a change.", 'bot');
+    return;
+  }
+
+  inp.value='';
+  addMsg(msg, 'user');
+  var think = addMsg('Applying change...', 'bot thinking');
+
+  // Detect language from gen-lang selector or content
+  var lang = (document.getElementById('gen-lang') || {}).value || 'Python';
+  if(currentCode.trim().toLowerCase().startsWith('<!') || currentCode.trim().toLowerCase().startsWith('<html')) lang = 'HTML/JS';
+
+  var prompt = lang + ' code. Apply ONLY this specific change: ' + msg + '\n\nKeep ALL existing functionality exactly as is. Only add/modify the requested feature.\n\nExisting code:\n' + currentCode;
+
+  fetch(API+'/api/generate_code', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({prompt: prompt, language: lang})
+  })
+  .then(function(r){ return r.json(); })
+  .then(function(d){
+    think.remove();
+    if(d.error){
+      addMsg('Error: ' + d.error, 'bot');
+      return;
+    }
+    var newCode = d.code || '';
+    if(!newCode){ addMsg('No code returned — try rephrasing your request.', 'bot'); return; }
+
+    // Update scratchpad and generated code panel
+    document.getElementById('lab-input').value = newCode;
+    _genCode = newCode;
+    if(document.getElementById('gen-code-panel').style.display !== 'none'){
+      document.getElementById('gen-code-output').textContent = newCode;
+    }
+
+    // Show success message with apply button
+    var div = document.createElement('div');
+    div.className = 'cmsg bot';
+    div.style.cssText = 'border-left:3px solid var(--gr)';
+    var pre = document.createElement('pre');
+    pre.style.cssText = 'background:var(--bg);border-radius:6px;padding:8px;font-size:9px;overflow-x:auto;white-space:pre-wrap;word-break:break-word;max-height:180px;overflow-y:auto;color:var(--gr2);margin:6px 0';
+    pre.textContent = newCode.slice(0, 600) + (newCode.length > 600 ? '\n... (see scratchpad for full code)' : '');
+    var note = document.createElement('div');
+    note.style.cssText = 'font-size:9px;color:var(--gr2);margin-top:4px';
+    note.textContent = '✓ Change applied — code updated in scratchpad above.';
+    var copyBtn = document.createElement('button');
+    copyBtn.textContent = 'Copy Full Code'; copyBtn.className = 'lab-copy';
+    copyBtn.style.cssText = 'display:inline-block;margin-top:6px;font-size:8px;padding:3px 8px';
+    copyBtn.onclick = function(){ navigator.clipboard.writeText(newCode).then(function(){ toast('Copied','ok'); }); };
+    var testBtn = document.createElement('button');
+    testBtn.textContent = '▶ Test in Labs'; testBtn.className = 'lab-copy';
+    testBtn.style.cssText = 'display:inline-block;margin:6px 0 0 6px;font-size:8px;padding:3px 8px;color:var(--pu2);border-color:rgba(124,106,247,.3)';
+    testBtn.onclick = function(){ genTestInLabs(); };
+    div.appendChild(note); div.appendChild(pre); div.appendChild(copyBtn); div.appendChild(testBtn);
+    var msgs = document.getElementById('chatmsgs');
+    msgs.appendChild(div); msgs.scrollTop = msgs.scrollHeight;
+  })
+  .catch(function(e){
+    think.remove();
+    addMsg('Server error: ' + String(e) + '\nIs server.py running?', 'bot');
+  });
+}
+
+/* Keep sendChat as alias for backwards compatibility */
+function sendChat(){ sendFeatureEdit(); }
+
+
+function addMsg(txt, cls){
+  var msgs=document.getElementById('chatmsgs'), div=document.createElement('div');
+  div.className='cmsg '+cls;
+  var hasCode = cls==='bot' && (txt.indexOf('def ')!==-1||txt.indexOf('import ')!==-1||txt.indexOf('function ')!==-1||txt.indexOf('class ')!==-1||txt.indexOf('```')!==-1);
+  if(hasCode){
+    // Render code blocks in a pre element
+    var pre=document.createElement('pre');
+    pre.style.cssText='background:var(--bg);border-radius:6px;padding:10px;font-size:10px;overflow-x:auto;white-space:pre-wrap;word-break:break-word;margin-top:6px;color:var(--gr2)';
+    pre.textContent=txt.replace(/```[a-z]*/gi,'').replace(/```/g,'').trim();
+    div.textContent='';
+    div.appendChild(pre);
+    var btn=document.createElement('button');
+    btn.textContent='Copy Code'; btn.className='lab-copy';
+    btn.style.cssText='display:block;margin-top:6px;font-size:8px;padding:3px 8px';
+    btn.onclick=function(){ navigator.clipboard.writeText(pre.textContent).then(function(){ toast('Copied','ok'); }); };
+    div.appendChild(btn);
+  } else {
+    div.textContent=txt;
+  }
+  msgs.appendChild(div); msgs.scrollTop=msgs.scrollHeight; return div;
+}
+
+/* ---- SETTINGS ---- */
+function loadSettings(){
+  fetch(API+'/api/settings')
+    .then(function(r){return r.json();})
+    .then(function(d){
+      var ck=document.getElementById('s-ckey'), rk=document.getElementById('s-rkey');
+      if(ck) ck.placeholder=d.cerebras_key?'...... (saved)':'csk-...';
+      if(rk) rk.placeholder=d.groq_key?'...... (saved)':'gsk_...';
+      var cs=document.getElementById('gstat'), rs=document.getElementById('rstat');
+      if(cs){ cs.textContent=d.cerebras_key?'✓ Key saved':'Not configured'; cs.className='kstat '+(d.cerebras_key?'kset':'kunset'); }
+      if(rs){ rs.textContent=d.groq_key?'✓ Key saved':'Not configured'; rs.className='kstat '+(d.groq_key?'kset':'kunset'); }
+      setTgl('tgl-global', d.use_global_keys);
+      updateKeyUI(d.use_global_keys);
+      setSelV('s-pmodel', d.primary_model);
+      setSelV('s-bmodel', d.backup_model);
+      setSelV('s-retries', String(d.max_retries));
+      setSelV('s-poll', String(d.poll_interval));
+      setSelV('s-parallel', String(d.max_parallel_coders||3));
+      setTgl('tgl-mob', d.mobile_mode);
+      setTgl('tgl-ar', true);
+      setTgl('tgl-notif', d.notifications);
+      setTgl('tgl-cr', d.coder_rules);
+      setTgl('tgl-mem', true);
+      setTgl('tgl-sync', d.auto_sync);
+    }).catch(function(){});
+}
+
+function updateKeyUI(useGlobal){
+  var section=document.getElementById('user-keys-section');
+  var banner=document.getElementById('gkey-banner');
+  if(section) section.style.display=useGlobal?'none':'block';
+  if(banner) banner.style.display=useGlobal?'block':'none';
+}
+
+function setSelV(id, val){
+  var e=document.getElementById(id); if(!e||!val) return;
+  for(var i=0;i<e.options.length;i++) if(e.options[i].value===val){ e.selectedIndex=i; break; }
+}
+function setTgl(id, on){ var e=document.getElementById(id); if(e) e.classList.toggle('on',!!on); }
+
+function togSet(key){
+  var map={mob:'tgl-mob',ar:'tgl-ar',notif:'tgl-notif',cr:'tgl-cr',mem:'tgl-mem',sync:'tgl-sync',global:'tgl-global',
+    'agent-orchestrator':'tgl-agent-orchestrator','agent-planner':'tgl-agent-planner',
+    'agent-coder':'tgl-agent-coder','agent-reviewer':'tgl-agent-reviewer','agent-debugger':'tgl-agent-debugger'};
+  var e=document.getElementById(map[key]); if(!e) return;
+  e.classList.toggle('on');
+  if(key==='mob') document.body.classList.toggle('mob', e.classList.contains('on'));
+  if(key==='global') updateKeyUI(e.classList.contains('on'));
+}
+
+function saveSec(sec){
+  var data={};
+  if(sec==='keys'){
+    data.use_global_keys = document.getElementById('tgl-global').classList.contains('on');
+    var ck=document.getElementById('s-ckey').value.trim();
+    var rk=document.getElementById('s-rkey').value.trim();
+    if(ck) data.cerebras_key=ck;
+    if(rk) data.groq_key=rk;
+    data.primary_model = document.getElementById('s-pmodel').value;
+    data.backup_model  = document.getElementById('s-bmodel').value;
+  } else if(sec==='disp'){
+    data.mobile_mode   = document.getElementById('tgl-mob').classList.contains('on');
+    data.notifications = document.getElementById('tgl-notif').classList.contains('on');
+    data.poll_interval = parseInt(document.getElementById('s-poll').value);
+    startPoll(data.poll_interval);
+  } else if(sec==='ai'){
+    data.max_retries          = parseInt(document.getElementById('s-retries').value);
+    var sp = document.getElementById('s-parallel');
+    if(sp) data.max_parallel_coders = parseInt(sp.value);
+    data.coder_rules = document.getElementById('tgl-cr').classList.contains('on');
+    data.auto_sync   = document.getElementById('tgl-sync').classList.contains('on');
+  }
+  fetch(API+'/api/settings',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)})
+    .then(function(r){return r.json();})
+    .then(function(d){ if(d.ok) toast('Saved','ok'); else toast(d.error||'Failed','err'); })
+    .catch(function(){ toast('Server not reachable','err'); });
+}
+
+function danger(type){
+  var labels={logs:'Clear all logs?',memory:'Clear AI memory?',output:'Delete ALL output files?',project:'Unload project and clear all agent memory?'};
+  if(!confirm(labels[type]||'Are you sure?')) return;
+  var ep={logs:'/api/clear_logs',memory:'/api/clear_memory',output:'/api/clear_output',project:'/api/unload_project'};
+  fetch(API+ep[type],{method:'POST'}).then(function(r){return r.json();}).then(function(d){
+    if(d.ok) toast('Done','ok'); else toast(d.error||'Failed','err');
+  }).catch(function(){ toast('Failed — is server running?','err'); });
+}
+
+
+/* ---- FILE VIEWER ---- */
+var currentFileEnc = '';
+function viewFile(enc){
+  currentFileEnc = enc;
+  var modal = document.getElementById('filemodal');
+  var code  = document.getElementById('modal-code');
+  var title = document.getElementById('modal-filename');
+  title.textContent = decodeURIComponent(enc);
+  code.textContent  = 'Loading...';
+  modal.classList.add('on');
+  fetch(API+'/api/file_content/'+enc)
+    .then(function(r){ return r.json(); })
+    .then(function(d){ code.textContent = d.content || d.error || 'Empty file'; })
+    .catch(function(){ code.textContent = 'Failed to load — is server.py running?'; });
+}
+
+/* ---- KEY CHECK ---- */
+function checkKeys(){
+  fetch(API+'/api/key_check')
+    .then(function(r){ return r.json(); })
+    .then(function(d){
+      var badge = document.getElementById('labs-key-badge');
+      var alert = document.getElementById('labs-keyalert');
+      if(d.cerebras || d.groq){
+        if(badge){ badge.textContent=(d.cerebras?'Cerebras OK ':'')+' '+(d.groq?'Groq OK':''); badge.style.color='var(--gr2)'; badge.style.borderColor='rgba(61,214,140,.3)'; }
+        if(alert) alert.style.display='none';
+      } else {
+        if(badge){ badge.textContent='No keys set'; badge.style.color='#f8a0a0'; badge.style.borderColor='rgba(240,82,82,.3)'; }
+        if(alert) alert.style.display='block';
+      }
+    }).catch(function(){});
+}
+
+/* ---- AGENTS PAGE ---- */
+var agentChatFilter = 'all';
+var agentChatData   = [];
+
+function pollAgents(){
+  fetch(API+'/api/agent_chat')
+    .then(function(r){ return r.json(); })
+    .then(function(d){
+      agentChatData = d;
+      renderAgentChat(d);
+      updateAgentCards(d);
+    }).catch(function(){});
+}
+
+function renderAgentChat(entries){
+  var el = document.getElementById('agent-chat-body');
+  if(!entries || !entries.length){
+    el.innerHTML = '<div style="color:var(--tx3);font-size:10px;padding:20px;text-align:center">No agent activity yet</div>';
+    return;
+  }
+  var filtered = agentChatFilter === 'all' ? entries : entries.filter(function(e){ return e.agent === agentChatFilter || e.agent.startsWith(agentChatFilter); });
+  var count = document.getElementById('cf-count');
+  if(count) count.textContent = entries.length + ' MESSAGES';
+  var html = '';
+  filtered.slice(-100).forEach(function(e){
+    html += '<div class="cf-entry">'
+          + '<span class="cf-agent" style="color:'+esc(e.color||'#8892a4')+'">'+esc((e.agent_upper||e.agent).toUpperCase())+'</span>'
+          + '<span class="cf-task">'+(e.task_id?'['+esc(e.task_id)+']':'')+'</span>'
+          + '<span class="cf-msg">'+esc(e.message)+'</span>'
+          + '</div>';
+  });
+  el.innerHTML = html;
+  el.scrollTop = el.scrollHeight;
+}
+
+function filterAgentChat(btn, agent){
+  agentChatFilter = agent;
+  document.querySelectorAll('.cf-filter').forEach(function(b){ b.classList.remove('on'); });
+  btn.classList.add('on');
+  renderAgentChat(agentChatData);
+  // Scroll to bottom after filter so you always see the newest entries
+  var el = document.getElementById('agent-chat-body');
+  if(el) el.scrollTop = el.scrollHeight;
+}
+
+function updateAgentCards(entries){
+  // Build last-seen map from chat log
+  var agentLastSeen = {};
+  entries.forEach(function(e){
+    var base = e.agent.replace(/-\d+$/, '');
+    agentLastSeen[base] = e;
+  });
+
+  // Also fetch bus pending counts to get a live active signal
+  // An agent is truly active if it has unread bus messages waiting
+  fetch(API+'/api/agents/bus')
+    .then(function(r){ return r.json(); })
+    .then(function(busStatus){
+      ['orchestrator','planner','coder','reviewer','debugger','tester','validator'].forEach(function(name){
+        var dot  = document.getElementById('ad-'+name);
+        var stat = document.getElementById('as-'+name);
+        var task = document.getElementById('at-'+name);
+        var last = agentLastSeen[name];
+        var hasPending = busStatus[name] && busStatus[name].pending > 0;
+
+        if(hasPending){
+          // Bus has messages waiting — agent is genuinely active right now
+          if(dot)  { dot.classList.add('on'); dot.style.boxShadow='0 0 8px currentColor'; }
+          if(stat) stat.textContent = 'Working';
+          if(task && last) task.textContent = last.task_id ? 'Task '+last.task_id : last.message.slice(0,28);
+        } else if(last){
+          // Has logged recently but no pending bus messages — recently active
+          if(dot)  { dot.classList.add('on'); dot.style.boxShadow=''; }
+          if(stat) stat.textContent = 'Active';
+          if(task) task.textContent = last.task_id ? 'Task '+last.task_id : last.message.slice(0,28);
+        } else {
+          if(dot)  { dot.classList.remove('on'); dot.style.boxShadow=''; }
+          if(stat) stat.textContent = 'Idle';
+          if(task) task.textContent = '—';
+        }
+      });
+    })
+    .catch(function(){
+      // Bus fetch failed — fall back to chat-log-only signal
+      ['orchestrator','planner','coder','reviewer','debugger','tester','validator'].forEach(function(name){
+        var dot  = document.getElementById('ad-'+name);
+        var stat = document.getElementById('as-'+name);
+        var task = document.getElementById('at-'+name);
+        var last = agentLastSeen[name];
+        if(last){
+          if(dot)  dot.classList.add('on');
+          if(stat) stat.textContent = 'Active';
+          if(task) task.textContent = last.task_id ? 'Task '+last.task_id : last.message.slice(0,28);
+        } else {
+          if(dot)  dot.classList.remove('on');
+          if(stat) stat.textContent = 'Idle';
+          if(task) task.textContent = '—';
+        }
+      });
+    });
+}
+
+function ctrlRerun(){
+  var tid = document.getElementById('ctrl-task-id').value.trim();
+  if(!tid){ toast('Enter a task ID first','err'); return; }
+  fetch(API+'/api/agent_bus/inject',{method:'POST',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({from_agent:'dashboard',to_agent:'orchestrator',type:'rerun_task',content:{task_id:tid},task_id:tid})
+  }).then(function(){ toast('Rerun signal sent for task '+tid,'ok'); }).catch(function(){ toast('Failed','err'); });
+}
+
+function ctrlForceReview(){
+  var filename = document.getElementById('ctrl-filename').value.trim();
+  if(!filename){ toast('Enter a filename first','err'); return; }
+  fetch(API+'/api/agent_bus/inject',{
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({from_agent:'dashboard', to_agent:'reviewer', type:'force_review', content:{filename:filename}})
+  }).then(function(r){return r.json();}).then(function(d){
+    if(d.ok) toast('Force review injected for: '+filename,'ok');
+    else toast(d.error||'Failed','err');
+  }).catch(function(){ toast('Server not reachable','err'); });
+}
+function ctrlInject(){
+  var tid = document.getElementById('ctrl-task-id').value.trim();
+  fetch(API+'/api/agent_bus/inject',{method:'POST',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({from_agent:'dashboard',to_agent:'orchestrator',type:'manual',content:{note:'Manual inject'},task_id:tid||null})
+  }).then(function(){ toast('Message injected','info'); }).catch(function(){ toast('Failed','err'); });
+}
+
+setInterval(function(){
+  if(document.getElementById('page-agents') && document.getElementById('page-agents').classList.contains('on')){
+    pollAgents();
+    pollAgentStats();
+    pollProviderStatus();
+  }
+}, 3000);
+
+/* ---- AGENT STATS ---- */
+function pollAgentStats(){
+  fetch(API+'/api/agents/stats')
+    .then(function(r){ return r.json(); })
+    .then(function(d){
+      var agents = ['orchestrator','planner','coder','reviewer','debugger','tester'];
+      agents.forEach(function(name){
+        var el = document.getElementById('stat-'+name);
+        if(!el || !d[name]) return;
+        var s = d[name];
+        var color = {orchestrator:'#9b8dff',planner:'#4b9eff',coder:'#3dd68c',reviewer:'#f5a623',debugger:'#f05252',tester:'#22d3ee'}[name];
+        var rows = [
+          ['Tasks', s.tasks_handled],
+          ['Messages', s.total_messages],
+          ['Bus sent', s.bus_messages_sent],
+          ['Errors', s.errors],
+        ];
+        if(s.pass_rate !== null && s.pass_rate !== undefined){
+          rows.splice(1, 0, ['Pass rate', s.pass_rate+'%']);
+        }
+        el.innerHTML = '<div style="font-size:9px;color:'+color+';letter-spacing:2px;text-transform:uppercase;margin-bottom:8px;font-weight:700">'+name+'</div>'
+          + rows.map(function(r){
+              return '<div style="display:flex;justify-content:space-between;font-size:9px;padding:2px 0;border-bottom:1px solid rgba(37,47,69,.4)">'
+                   + '<span style="color:var(--tx3)">'+r[0]+'</span>'
+                   + '<span style="color:var(--tx);font-weight:600">'+r[1]+'</span></div>';
+            }).join('');
+      });
+    }).catch(function(){});
+}
+
+/* ---- AGENT PROVIDER STATUS ---- */
+function pollProviderStatus(){
+  fetch(API+'/api/agents/provider_status')
+    .then(function(r){ return r.json(); })
+    .then(function(d){
+      // Primary model labels for each agent (shown when using primary)
+      var primaryLabels = {
+        orchestrator: '🧠 Groq llama-3.3-70b',
+        planner:      '🧠 SambaNova gpt-oss-120b',
+        coder:        '🧠 Cerebras gpt-oss-120b',
+        debugger:     '🧠 Cerebras gpt-oss-120b',
+        reviewer:     '🧠 Mistral Codestral',
+        validator:    '🧠 Groq llama-3.1-8b',
+        architect:    '🧠 NVIDIA NIM deepseek-r1',
+      };
+      var agents = ['orchestrator','planner','coder','debugger','reviewer','validator','architect'];
+      agents.forEach(function(name){
+        var el = document.getElementById('am-'+name);
+        if(!el) return;
+        var info = d[name];
+        if(!info){
+          // Never called yet — show primary label in muted grey
+          el.innerHTML = (primaryLabels[name] || '🧠 Groq fallback')
+            + '<span style="display:inline-block;margin-left:5px;padding:1px 5px;border-radius:3px;background:rgba(74,85,104,.2);color:var(--tx3);font-size:7px;letter-spacing:1px">READY</span>';
+          return;
+        }
+        var isFallback = info.is_fallback;
+        var modelShort = (info.model || '').replace('llama-3.3-70b-versatile','llama-3.3-70b').replace('Meta-Llama-3.3-70B-Instruct','llama-3.3-70b').replace('gpt-oss-120b','gpt-oss-120b');
+        var providerIcon = {nim:'🔵',sambanova:'🟣',cerebras:'⚡',mistral:'🟠',groq:'🟢'}[info.provider] || '🧠';
+        if(isFallback){
+          el.innerHTML = providerIcon + ' ' + esc(modelShort)
+            + ' <span style="display:inline-block;margin-left:4px;padding:1px 5px;border-radius:3px;background:rgba(245,166,35,.15);color:#f5a623;font-size:7px;letter-spacing:1px;border:1px solid rgba(245,166,35,.3)">FALLBACK</span>';
+          el.style.color = '#f5a623';
+        } else {
+          el.innerHTML = providerIcon + ' ' + esc(modelShort)
+            + ' <span style="display:inline-block;margin-left:4px;padding:1px 5px;border-radius:3px;background:rgba(61,214,140,.1);color:var(--gr2);font-size:7px;letter-spacing:1px;border:1px solid rgba(61,214,140,.2)">PRIMARY</span>';
+          el.style.color = 'var(--tx3)';
+        }
+      });
+    }).catch(function(){});
+}
+
+/* ---- LABS SCRATCHPAD ---- */
+var labMode = 'code';
+var _lastGenCode = '';
+var _lastGenLang = 'Python';
+
+function labQuick(text){
+  document.getElementById('lab-input').value = text;
+}
+
+function labLangChanged(){
+  var lang = document.getElementById('lab-lang').value;
+  if(lang === 'HTML'){
+    scratchTab('preview');
+  } else {
+    scratchTab('output');
+  }
+}
+
+function scratchTab(tab){
+  var outPanel = document.getElementById('scratch-output-panel');
+  var prevPanel = document.getElementById('scratch-preview-panel');
+  var outBtn = document.getElementById('scratch-tab-output');
+  var prevBtn = document.getElementById('scratch-tab-preview');
+  if(tab === 'preview'){
+    outPanel.style.display = 'none'; prevPanel.style.display = 'block';
+    outBtn.style.borderBottom = '2px solid transparent'; outBtn.style.color = 'var(--tx3)';
+    prevBtn.style.borderBottom = '2px solid var(--pu)'; prevBtn.style.color = 'var(--pu2)';
+  } else {
+    outPanel.style.display = 'block'; prevPanel.style.display = 'none';
+    outBtn.style.borderBottom = '2px solid var(--pu)'; outBtn.style.color = 'var(--pu2)';
+    prevBtn.style.borderBottom = '2px solid transparent'; prevBtn.style.color = 'var(--tx3)';
+  }
+}
+
+function labsClear(){
+  document.getElementById('lab-input').value = '';
+  document.getElementById('lab-output').textContent = 'Result will appear here...';
+  document.getElementById('lab-output').classList.add('empty');
+  document.getElementById('lab-stats').textContent = '';
+  document.getElementById('scratch-iframe').src = 'about:blank';
+}
+
+function _stripFences(code){
+  if(!code) return code;
+  code = code.trim();
+  // Remove opening fence with optional language tag
+  code = code.replace(/^```[a-zA-Z]*\n?/, '');
+  // Remove closing fence
+  code = code.replace(/\n?```$/, '');
+  return code.trim();
+}
+
+function labsRun(){
+  var inp = document.getElementById('lab-input').value.trim();
+  if(!inp){ toast('Paste some code or describe what to build first','err'); return; }
+  var btn = document.getElementById('lab-run-btn');
+  var out = document.getElementById('lab-output');
+  var lang = document.getElementById('lab-lang').value;
+  btn.disabled = true; btn.textContent = 'Working...';
+  out.classList.remove('empty');
+  out.style.color = 'var(--tx2)';
+  out.textContent = 'Processing...';
+  var t0 = Date.now();
+
+  // Detect if input looks like actual code or a plain English description
+  var looksLikeCode = inp.indexOf('\n') !== -1
+    || inp.indexOf('def ') !== -1 || inp.indexOf('import ') !== -1
+    || inp.indexOf('function ') !== -1 || inp.indexOf('class ') !== -1
+    || inp.indexOf('<!') !== -1 || inp.indexOf('<html') !== -1
+    || inp.indexOf('var ') !== -1 || inp.indexOf('const ') !== -1
+    || inp.indexOf('let ') !== -1 || inp.indexOf('print(') !== -1
+    || inp.indexOf('console.') !== -1;
+
+  if(!looksLikeCode){
+    // Generate code from description using /api/generate_code
+    out.textContent = 'Generating code with AI...';
+    fetch(API+'/api/generate_code', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({prompt: inp, language: lang})
+    })
+    .then(function(r){ return r.json(); })
+    .then(function(d){
+      if(d.error){ out.style.color='#f8a0a0'; out.textContent='Error: '+d.error; btn.disabled=false; btn.textContent='⚡ Run'; return; }
+      var code = _stripFences(d.code || '');
+      document.getElementById('lab-input').value = code;
+      _lastGenCode = code; _lastGenLang = lang;
+      document.getElementById('lab-stats').textContent = ((Date.now()-t0)/1000).toFixed(1)+'s · code generated';
+      out.textContent = '✓ Code generated in left panel.\nHit ⚡ Run again to execute it.';
+      out.style.color = 'var(--gr2)';
+      btn.disabled = false; btn.textContent = '⚡ Run';
+      toast('Code generated — hit Run again to execute','info');
+    })
+    .catch(function(e){ out.textContent='Error: '+String(e); out.style.color='#f8a0a0'; btn.disabled=false; btn.textContent='⚡ Run'; });
+    return;
+  }
+
+  // HTML code → render in preview iframe
+  var isHtml = lang === 'HTML' || inp.trim().toLowerCase().startsWith('<!') || inp.trim().toLowerCase().startsWith('<html');
+  if(isHtml){
+    var iframe = document.getElementById('scratch-iframe');
+    var cleanCode = _stripFences(inp);
+    iframe.srcdoc = cleanCode;
+    scratchTab('preview');
+    out.textContent = '✓ HTML rendered in Preview tab →';
+    out.style.color = 'var(--gr2)';
+    document.getElementById('lab-stats').textContent = 'preview mode';
+    btn.disabled = false; btn.textContent = '⚡ Run';
+    return;
+  }
+
+  // Python/Bash code → execute on server
+  var cleanCode = _stripFences(inp);
+  fetch(API+'/labs/run', {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({code: cleanCode, language: lang.toLowerCase(), filename: ''})
+  })
+  .then(function(r){ return r.json(); })
+  .then(function(d){
+    var elapsed = ((Date.now()-t0)/1000).toFixed(1);
+    out.classList.remove('empty');
+    scratchTab('output');
+    if(d.exit_code === 0){
+      out.style.color = 'var(--gr2)';
+      out.textContent = (d.output && d.output.trim()) ? d.output : '(script ran — no output printed)';
+    } else {
+      out.style.color = '#f8a0a0';
+      out.textContent = (d.errors || d.output || 'Exit code: '+d.exit_code);
+    }
+    document.getElementById('lab-stats').textContent = 'exit:'+d.exit_code+' · '+elapsed+'s';
+    btn.disabled = false; btn.textContent = '⚡ Run';
+  })
+  .catch(function(e){
+    out.textContent = 'Error: '+String(e)+'\n\nIs server.py running?';
+    out.style.color = '#f8a0a0';
+    btn.disabled = false; btn.textContent = '⚡ Run';
+  });
+}
+
+function labsCopy(){
+  var txt = document.getElementById('lab-output').textContent;
+  if(!txt || txt==='Result will appear here...'){ toast('Nothing to copy','err'); return; }
+  navigator.clipboard.writeText(txt).then(function(){ toast('Output copied','ok'); });
+}
+
+function labsCopyInput(){
+  var txt = document.getElementById('lab-input').value;
+  if(!txt){ toast('Nothing to copy','err'); return; }
+  navigator.clipboard.writeText(txt).then(function(){ toast('Code copied','ok'); });
+}
+
+function labsSendToFile(){
+  var code = document.getElementById('lab-input').value.trim();
+  if(!code){ toast('Scratchpad is empty','err'); return; }
+  document.getElementById('lv-code').textContent = code;
+  document.getElementById('lv-file-meta').textContent = 'from scratchpad';
+  document.getElementById('lv-run-btn').style.display = 'inline-flex';
+  lvTab('code');
+  toast('Loaded into file viewer — hit Run to execute','ok');
+  document.getElementById('lv-code-panel').scrollIntoView({behavior:'smooth'});
+}
+
+function lvSendToScratchpad(){
+  var code = document.getElementById('lv-code').textContent;
+  if(!code || code==='Select a file above to view its contents.'){ toast('No file loaded','err'); return; }
+  document.getElementById('lab-input').value = code;
+  toast('Loaded into scratchpad — hit Run to execute','ok');
+  document.getElementById('lab-input').scrollIntoView({behavior:'smooth'});
+}
+
+// Keep setMode as no-op for compatibility (mode tabs removed from labs)
+function setMode(btn, m){ labMode = m; }
+function loadQuick(text){ document.getElementById('lab-input').value = text; }
+
+
+/* ---- LABS FILE VIEWER ---- */
+var lvCurrentFile = '';
+var lvCurrentLang = '';
+
+function lvRefreshFiles(){
+  fetch(API+'/labs/files')
+    .then(function(r){ return r.json(); })
+    .then(function(files){
+      var sel = document.getElementById('lv-file-sel');
+      var prev = sel.value;
+      sel.innerHTML = '<option value="">— select a file —</option>';
+      (files||[]).forEach(function(f){
+        var opt = document.createElement('option');
+        opt.value = f.name;
+        opt.textContent = f.name + ' (' + f.size_kb + ' KB)';
+        sel.appendChild(opt);
+      });
+      if(prev) sel.value = prev;
+    }).catch(function(){});
+}
+
+function lvLoadFile(name){
+  if(!name){ lvCurrentFile=''; document.getElementById('lv-file-meta').textContent=''; return; }
+  lvCurrentFile = name;
+  fetch(API+'/labs/file/'+encodeURIComponent(name))
+    .then(function(r){ return r.json(); })
+    .then(function(d){
+      lvCurrentLang = d.language || '';
+      document.getElementById('lv-code').textContent = d.content || '';
+      document.getElementById('lv-file-meta').textContent = name + ' · ' + lvCurrentLang;
+      // Show run/preview button for python AND html
+      document.getElementById('lv-run-btn').style.display = (lvCurrentLang==='python'||lvCurrentLang==='html') ? 'inline-flex' : 'none';
+      document.getElementById('lv-run-btn').textContent = lvCurrentLang==='html' ? '▶ Preview' : '⚡ Run';
+      document.getElementById('lv-dl-btn').style.display = 'inline-flex';
+      // Show fullscreen button only for HTML
+      var fsBtn = document.getElementById('lv-fullscreen-btn');
+      if(fsBtn) fsBtn.style.display = lvCurrentLang==='html' ? 'inline-flex' : 'none';
+      if(lvCurrentLang === 'html'){
+        lvTab('preview');
+        document.getElementById('lv-iframe').srcdoc = d.content || '';
+      } else {
+        lvTab('code');
+      }
+    }).catch(function(){ document.getElementById('lv-code').textContent = 'Failed to load file.'; });
+}
+
+function lvTab(tab){
+  ['code','run','preview'].forEach(function(t){
+    document.getElementById('lv-'+t+'-panel').style.display = t===tab ? 'block' : 'none';
+    var btn = document.getElementById('lv-tab-'+t);
+    if(btn){
+      btn.style.borderBottom = t===tab ? '2px solid var(--pu)' : '2px solid transparent';
+      btn.style.color = t===tab ? 'var(--pu2)' : 'var(--tx3)';
+    }
+  });
+}
+
+function lvRunFile(){
+  if(!lvCurrentFile){ toast('Select a file first','err'); return; }
+  var code = document.getElementById('lv-code').textContent;
+
+  // HTML → render in preview iframe directly (no server needed)
+  if(lvCurrentLang === 'html'){
+    lvTab('preview');
+    document.getElementById('lv-iframe').srcdoc = code;
+    toast('HTML rendered in Preview tab','ok');
+    return;
+  }
+
+  lvTab('run');
+  var out  = document.getElementById('lv-run-out');
+  var meta = document.getElementById('lv-run-meta');
+  out.textContent = 'Running...'; out.style.color = 'var(--tx3)';
+  var t0 = Date.now();
+  fetch(API+'/labs/run',{
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({filename:lvCurrentFile, code:code, language:lvCurrentLang})
+  })
+  .then(function(r){ return r.json(); })
+  .then(function(d){
+    var elapsed = ((Date.now()-t0)/1000).toFixed(1);
+    out.style.color = d.exit_code===0 ? 'var(--gr2)' : '#f8a0a0';
+    out.textContent = (d.output||'(no output)') + (d.errors ? '\n\n[STDERR]\n'+d.errors : '');
+    meta.textContent = 'exit:'+d.exit_code+' · '+elapsed+'s';
+  })
+  .catch(function(e){ out.textContent='Error: '+e+'\n\nIs server.py running?'; out.style.color='#f8a0a0'; });
+}
+
+function lvDownload(){
+  if(lvCurrentFile) window.open(API+'/api/download/'+encodeURIComponent(lvCurrentFile));
+}
+
+function lvCopyCode(){
+  var txt = document.getElementById('lv-code').textContent;
+  if(!txt || txt==='Select a file above to view its contents.'){ toast('Nothing to copy','err'); return; }
+  navigator.clipboard.writeText(txt).then(function(){ toast('Copied','ok'); });
+}
+
+/* ---- FULLSCREEN PREVIEW ---- */
+function lvFullscreen(){
+  var code = document.getElementById('lv-code').textContent;
+  if(!code || !lvCurrentFile){ toast('No file loaded','err'); return; }
+  var modal = document.getElementById('fullscreen-modal');
+  var fsIframe = document.getElementById('fs-iframe');
+  var fsTitle  = document.getElementById('fs-modal-title');
+  fsTitle.textContent = lvCurrentFile + ' — Fullscreen Preview';
+  fsIframe.srcdoc = code;
+  modal.style.display = 'flex';
+  // ESC to close
+  document.addEventListener('keydown', _fsEscHandler);
+}
+function closeFullscreen(){
+  var modal = document.getElementById('fullscreen-modal');
+  modal.style.display = 'none';
+  document.getElementById('fs-iframe').srcdoc = 'about:blank';
+  document.removeEventListener('keydown', _fsEscHandler);
+}
+function _fsEscHandler(e){
+  if(e.key === 'Escape') closeFullscreen();
+}
+
+/* Also add fullscreen to scratchpad preview */
+function scratchFullscreen(){
+  var code = document.getElementById('lab-input').value;
+  if(!code){ toast('Nothing in scratchpad','err'); return; }
+  var modal = document.getElementById('fullscreen-modal');
+  document.getElementById('fs-modal-title').textContent = 'Scratchpad — Fullscreen Preview';
+  document.getElementById('fs-iframe').srcdoc = code;
+  modal.style.display = 'flex';
+  document.addEventListener('keydown', _fsEscHandler);
+}
+
+
+var _origGoPage = window.goPage || function(){};
+function goPage(name){
+  document.querySelectorAll('.page').forEach(function(p){p.classList.remove('on');});
+  document.querySelectorAll('.sbi').forEach(function(i){i.classList.remove('on');});
+  document.querySelectorAll('.mob-nav-item').forEach(function(i){i.classList.remove('on');});
+  document.getElementById('page-'+name).classList.add('on');
+  var sbi=document.getElementById('n-'+name); if(sbi) sbi.classList.add('on');
+  var mni=document.getElementById('mn-'+name); if(mni) mni.classList.add('on');
+  if(name==='settings') loadSettings();
+  if(name==='input') loadProjInfo();
+  if(name==='agents'){ pollAgents(); pollAgentStats(); pollProviderStatus(); }
+  if(name==='labs') lvRefreshFiles();
+}
+
+/* ---- PACKAGE FUNCTIONS (Bug 12 fix: APK gate + full implementation) ---- */
+function startPackage(target){
+  // APK requires explicit confirmation — takes 15-40 min and 4GB disk
+  if(target==='apk'){
+    document.getElementById('pkg-apk-warn').style.display='block';
+    if(!confirm(
+      'APK build requirements:\n\n' +
+      '• Takes 15–40 minutes\n' +
+      '• Needs ~4GB Android SDK on first run\n' +
+      '• Only works on Linux / macOS (WSL2 on Windows)\n\n' +
+      'Dashboard stays live while it builds.\nContinue?'
+    )) return;
+  } else {
+    document.getElementById('pkg-apk-warn').style.display='none';
+  }
+  document.getElementById('pkg-progress-wrap').style.display='block';
+  document.getElementById('pkg-done-wrap').style.display='none';
+  document.querySelectorAll('.pkg-btn').forEach(function(b){b.disabled=true;b.style.opacity='0.5';});
+  fetch(API+'/api/package',{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({target:target})
+  })
+  .then(function(r){return r.json();})
+  .then(function(d){
+    if(d.error){
+      toast(d.error,'err');
+      document.getElementById('pkg-progress-wrap').style.display='none';
+      document.querySelectorAll('.pkg-btn').forEach(function(b){b.disabled=false;b.style.opacity='1';});
+      return;
+    }
+    toast('Packaging as '+target+' started...','info');
+    _pollPackageStatus();
+  })
+  .catch(function(e){
+    toast('Package request failed','err');
+    document.getElementById('pkg-progress-wrap').style.display='none';
+    document.querySelectorAll('.pkg-btn').forEach(function(b){b.disabled=false;b.style.opacity='1';});
+  });
+}
+
+var _pkgPollT=null;
+function _pollPackageStatus(){
+  if(_pkgPollT) clearInterval(_pkgPollT);
+  _pkgPollT=setInterval(function(){
+    fetch(API+'/api/package/status')
+      .then(function(r){return r.json();})
+      .then(function(d){
+        var step=d.step||'Working...';
+        var pct=d.progress||0;
+        document.getElementById('pkg-step').textContent=step;
+        document.getElementById('pkg-pct').textContent=pct+'%';
+        document.getElementById('pkg-bar').style.width=pct+'%';
+        if(d.done){
+          clearInterval(_pkgPollT);
+          document.getElementById('pkg-progress-wrap').style.display='none';
+          document.querySelectorAll('.pkg-btn').forEach(function(b){b.disabled=false;b.style.opacity='1';});
+          if(d.error){
+            toast('Packaging failed: '+d.error,'err');
+          } else {
+            document.getElementById('pkg-done-wrap').style.display='block';
+            document.getElementById('pkg-done-msg').textContent='Package ready!';
+            toast('Package complete — ready to download!','ok');
+          }
+        }
+      }).catch(function(){clearInterval(_pkgPollT);});
+  },2000);
+}
+
+function pkgDownload(){
+  fetch(API+'/api/package/status')
+    .then(function(r){return r.json();})
+    .then(function(d){
+      if(d.download_url) window.open(API+d.download_url);
+      else toast('No download available yet','err');
+    });
+}
+
+
+
+/* ---- TOAST ---- */
+var toastT=null;
+function toast(msg,type){
+  var el=document.getElementById('toast'); el.textContent=msg; el.className='toast show '+(type||'info');
+  clearTimeout(toastT); toastT=setTimeout(function(){ el.classList.remove('show'); },3200);
+}
+/* ---- DUAL INPUT MODE ---- */
+function switchInputTab(tab){
+  document.getElementById('input-prompt-mode').style.display = tab==='prompt' ? 'block' : 'none';
+  document.getElementById('input-json-mode').style.display   = tab==='json'   ? 'block' : 'none';
+  document.getElementById('itab-prompt').classList.toggle('on', tab==='prompt');
+  document.getElementById('itab-json').classList.toggle('on', tab==='json');
+}
+
+var _builtProject = null;
+var _genCode = '';
+var _genLang = 'Python';
+
+/* ---- GENERATE CODE (Input Page) ---- */
+function generateCode(){
+  var prompt = document.getElementById('prompt-input').value.trim();
+  if(!prompt){ toast('Describe what you want to build first','err'); return; }
+  var lang = document.getElementById('gen-lang').value;
+  var btn = document.getElementById('gen-code-btn');
+  btn.disabled = true; btn.textContent = 'Generating...';
+
+  document.getElementById('gen-code-panel').style.display = 'block';
+  document.getElementById('gen-code-output').textContent = 'Asking AI to write code...';
+  document.getElementById('gen-code-output').style.color = 'var(--tx3)';
+  document.getElementById('gen-code-title').textContent = lang + ' Code';
+
+  fetch(API+'/api/generate_code', {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({prompt: prompt, language: lang})
+  })
+  .then(function(r){ return r.json(); })
+  .then(function(d){
+    btn.disabled = false; btn.textContent = '⚡ Generate Code';
+    if(d.error){
+      document.getElementById('gen-code-output').textContent = 'Error: '+d.error;
+      document.getElementById('gen-code-output').style.color = '#f8a0a0';
+      toast(d.error, 'err'); return;
+    }
+    _genCode = d.code || '';
+    _genLang = lang;
+    document.getElementById('gen-code-output').textContent = _genCode;
+    document.getElementById('gen-code-output').style.color = 'var(--gr2)';
+    toast('Code generated! Copy, download, or Test in Labs ↓','ok');
+    showQuickPkg();
+  })
+  .catch(function(e){
+    btn.disabled = false; btn.textContent = '⚡ Generate Code';
+    document.getElementById('gen-code-output').textContent = 'Error: '+String(e)+'\nIs server.py running?';
+    document.getElementById('gen-code-output').style.color = '#f8a0a0';
+  });
+}
+
+function genCopyCode(){
+  if(!_genCode){ toast('Generate code first','err'); return; }
+  navigator.clipboard.writeText(_genCode).then(function(){ toast('Code copied to clipboard!','ok'); });
+}
+
+function genDownloadCode(){
+  if(!_genCode){ toast('Generate code first','err'); return; }
+  var ext = _genLang.toLowerCase().indexOf('html') !== -1 ? '.html'
+          : _genLang.toLowerCase().indexOf('python') !== -1 ? '.py' : '.txt';
+  var a = document.createElement('a');
+  a.href = 'data:text/plain;charset=utf-8,' + encodeURIComponent(_genCode);
+  a.download = 'katalyst_code' + ext;
+  a.click();
+  toast('Downloaded!','ok');
+}
+
+function genTestInLabs(){
+  if(!_genCode){ toast('Generate code first','err'); return; }
+  // Load code into Labs scratchpad and navigate
+  document.getElementById('lab-input').value = _genCode;
+  var langSel = document.getElementById('lab-lang');
+  if(_genLang.toLowerCase().indexOf('html') !== -1){
+    langSel.value = 'HTML';
+  } else {
+    langSel.value = 'Python';
+  }
+  goPage('labs');
+  toast('Code loaded in Labs — hit ⚡ Run to test it!','ok');
+  // Auto-run after small delay
+  setTimeout(function(){ labsRun(); }, 400);
+}
+
+/* ---- FULL PROJECT PLAN (convert_prompt) ---- */
+function convertPrompt(){
+  var prompt = document.getElementById('prompt-input').value.trim();
+  if(!prompt){ toast('Enter a description first','err'); return; }
+  var btn = document.querySelector('[onclick="convertPrompt()"]');
+  var oldTxt = btn.textContent;
+  btn.textContent = '⏳ Planning...'; btn.disabled = true;
+  fetch(API+'/api/convert_prompt', {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({prompt: prompt})
+  })
+  .then(function(r){
+    // Always parse as JSON — server now never returns HTML
+    return r.json();
+  })
+  .then(function(d){
+    btn.textContent = oldTxt; btn.disabled = false;
+    if(d.error){ toast(d.error,'err'); return; }
+    _builtProject = d.project;
+    var s = d.summary;
+    var rows = [
+      ['Project Name', s.name],
+      ['Type', (d.project.project||{}).type||'—'],
+      ['Phases', s.phases],
+      ['Total Tasks', s.tasks],
+      ['Description', s.desc ? s.desc.slice(0,80)+'…' : '—']
+    ];
+    var html = rows.map(function(r){
+      return '<div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid rgba(37,47,69,.4);font-size:10px">'
+           + '<span style="color:var(--tx3);letter-spacing:1px">'+esc(r[0])+'</span>'
+           + '<span style="color:var(--tx);font-weight:600">'+esc(String(r[1]))+'</span></div>';
+    }).join('');
+    document.getElementById('pp-rows').innerHTML = html;
+    document.getElementById('plan-preview').style.display = 'block';
+    toast('Plan ready — '+s.tasks+' tasks across '+s.phases+' phases','ok');
+  })
+  .catch(function(e){ btn.textContent=oldTxt; btn.disabled=false; toast('Server error: '+String(e),'err'); });
+}
+
+function startFromPrompt(){
+  var prompt = document.getElementById('prompt-input').value.trim();
+  if(!prompt){ toast('Enter a description first','err'); return; }
+  var btn = document.getElementById('startbtn-prompt');
+  btn.disabled = true; btn.textContent = 'Starting...';
+  fetch(API+'/api/start_prompt', {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({prompt: prompt})
+  })
+  .then(function(r){ return r.json(); })
+  .then(function(d){
+    if(d.error){ toast(d.error,'err'); btn.disabled=false; btn.textContent='⚡ PLAN & BUILD (Full Multi-file Project)'; return; }
+    toast('Building: '+d.name+' — '+d.tasks+' tasks started!','ok');
+    btn.textContent='⚡ PLAN & BUILD (Full Multi-file Project)'; btn.disabled=false;
+    goPage('dash');
+  })
+  .catch(function(){ btn.disabled=false; btn.textContent='⚡ PLAN & BUILD (Full Multi-file Project)'; toast('Server not reachable','err'); });
+}
+
+/* ---- QUICK PACKAGE (Input page + anywhere) ---- */
+function showQuickPkg(){
+  var bar = document.getElementById('quick-pkg-bar');
+  if(bar) bar.style.display = 'block';
+}
+
+var _qpkgPollT = null;
+var _qpkgDlUrl = null;
+
+function quickPkg(target){
+  // Confirm for APK — it takes a long time
+  if(target === 'apk'){
+    var ok = confirm(
+      '📱 Build APK — Please read before continuing:\n\n' +
+      '• Requires: Node.js, Java 17+, ~4GB disk space\n' +
+      '• First build: 20-45 minutes (downloads Android SDK)\n' +
+      '• Subsequent builds: 3-8 minutes (cached)\n' +
+      '• Linux / macOS only (Windows: use WSL2)\n' +
+      '• Dashboard stays live while building\n\n' +
+      'The packager wraps your HTML/JS app in a native Android shell.\n' +
+      'Continue?'
+    );
+    if(!ok) return;
+  } else if(target === 'exe'){
+    var ok2 = confirm(
+      '💻 Build EXE — Please read:\n\n' +
+      '• Uses PyInstaller to bundle your Python app\n' +
+      '• Requires a Python entry point (main.py, app.py, etc.)\n' +
+      '• Takes 1-5 minutes\n' +
+      '• Output runs on the same OS you build on (Linux → Linux EXE)\n\n' +
+      'Continue?'
+    );
+    if(!ok2) return;
+  } else if(target === 'docker'){
+    var ok3 = confirm(
+      '🏗️ Build Docker Package — Please read:\n\n' +
+      '• Generates a Dockerfile + docker-compose.yml\n' +
+      '• Does NOT require Docker installed here — just produces the files\n' +
+      '• You run it on any machine with Docker\n' +
+      '• Takes a few seconds\n\n' +
+      'Continue?'
+    );
+    if(!ok3) return;
+  }
+
+  // Reset progress UI
+  var progress = document.getElementById('qpkg-progress');
+  var done     = document.getElementById('qpkg-done');
+  var step     = document.getElementById('qpkg-step');
+  var pct      = document.getElementById('qpkg-pct');
+  var bar      = document.getElementById('qpkg-bar');
+  if(progress) progress.style.display = 'block';
+  if(done)     done.style.display     = 'none';
+  if(step)     step.textContent       = 'Starting ' + target + ' build...';
+  if(pct)      pct.textContent        = '0%';
+  if(bar)      bar.style.width        = '0%';
+  _qpkgDlUrl = null;
+
+  // Also reset/show main dashboard package panel progress if on dash page
+  var pkgProg = document.getElementById('pkg-progress-wrap');
+  var pkgDone = document.getElementById('pkg-done-wrap');
+  if(pkgProg) pkgProg.style.display = 'block';
+  if(pkgDone) pkgDone.style.display = 'none';
+  document.querySelectorAll('.pkg-btn').forEach(function(b){b.disabled=true;b.style.opacity='0.5';});
+
+  fetch(API+'/api/package',{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({target:target})
+  })
+  .then(function(r){return r.json();})
+  .then(function(d){
+    if(d.error){
+      toast(d.error,'err');
+      if(pkgProg) pkgProg.style.display='none';
+      document.querySelectorAll('.pkg-btn').forEach(function(b){b.disabled=false;b.style.opacity='1';});
+      return;
+    }
+    toast('Building ' + target + '... check progress bar','info');
+    _startQpkgPoll();
+  })
+  .catch(function(){ toast('Package request failed — is server.py running?','err'); });
+}
+
+function _startQpkgPoll(){
+  if(_qpkgPollT) clearInterval(_qpkgPollT);
+  _qpkgPollT = setInterval(function(){
+    fetch(API+'/api/package/status')
+      .then(function(r){return r.json();})
+      .then(function(d){
+        var stepEl = document.getElementById('qpkg-step');
+        var pctEl  = document.getElementById('qpkg-pct');
+        var barEl  = document.getElementById('qpkg-bar');
+        var doneEl = document.getElementById('qpkg-done');
+        var pct    = d.progress || 0;
+        if(stepEl) stepEl.textContent = d.step || 'Working...';
+        if(pctEl)  pctEl.textContent  = pct + '%';
+        if(barEl)  barEl.style.width  = pct + '%';
+        // Mirror to main dashboard panel too
+        var mpStep = document.getElementById('pkg-step');
+        var mpPct  = document.getElementById('pkg-pct');
+        var mpBar  = document.getElementById('pkg-bar');
+        if(mpStep) mpStep.textContent = d.step || 'Working...';
+        if(mpPct)  mpPct.textContent  = pct + '%';
+        if(mpBar)  mpBar.style.width  = pct + '%';
+        if(d.done){
+          clearInterval(_qpkgPollT);
+          document.querySelectorAll('.pkg-btn').forEach(function(b){b.disabled=false;b.style.opacity='1';});
+          var pkgProg = document.getElementById('pkg-progress-wrap');
+          if(pkgProg) pkgProg.style.display='none';
+          if(d.error){
+            toast('Build failed: ' + d.error, 'err');
+            if(stepEl) stepEl.textContent = '✗ Failed: ' + d.error.slice(0,60);
+          } else {
+            if(d.download_url) _qpkgDlUrl = d.download_url;
+            if(doneEl) doneEl.style.display = 'flex';
+            var pkgDone = document.getElementById('pkg-done-wrap');
+            var pkgMsg  = document.getElementById('pkg-done-msg');
+            if(pkgDone) pkgDone.style.display = 'block';
+            if(pkgMsg)  pkgMsg.textContent = 'Package ready!';
+            toast('Build complete — click Download to get your file!', 'ok');
+          }
+        }
+      }).catch(function(){ clearInterval(_qpkgPollT); });
+  }, 2000);
+}
+
+function qpkgDownload(){
+  if(_qpkgDlUrl){
+    window.open(API + _qpkgDlUrl);
+    return;
+  }
+  // Fallback: fetch status to get download url
+  fetch(API+'/api/package/status')
+    .then(function(r){return r.json();})
+    .then(function(d){
+      if(d.download_url) window.open(API + d.download_url);
+      else toast('No download URL yet — try again in a moment','err');
+    });
+}
+
+
+</script>
+</body>
+</html>

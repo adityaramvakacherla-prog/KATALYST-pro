@@ -1,0 +1,309 @@
+"""
+visual_tester.py — KATALYST Visual Tester
+Breaks the closed LLM-evaluates-LLM loop by using a real headless browser.
+
+Pipeline:
+  1. Playwright renders the HTML in a real Chromium instance
+  2. Takes a 1280x800 screenshot
+  3. Sends the screenshot as base64 to a vision-capable model
+  4. Vision model describes what it ACTUALLY sees, then scores it
+  5. Returns (passed, reason, screenshot_b64)
+
+Used by Orchestrator after Reviewer PASS for all HTML/JS files.
+Falls back gracefully if Playwright or vision model unavailable.
+
+Vision model routing:
+  - Groq:  llama-3.2-11b-vision-preview  (fast, free tier)
+  - NIM:   meta/llama-3.2-11b-vision-instruct (if NIM_KEY set)
+  Fallback: skip visual test, log warning, pass through
+
+VISUAL SCORE THRESHOLD: 7/10
+Below this the file is sent back to Debugger with the vision model's description
+as the issue — giving the Debugger ground truth about what actually renders.
+"""
+import os
+import sys
+import base64
+import time
+
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+
+import agent_chat
+
+VISUAL_PASS_THRESHOLD = 7   # /10 — below this = fail, send to Debugger
+VIEWPORT_WIDTH        = 1280
+VIEWPORT_HEIGHT       = 800
+SCREENSHOT_TIMEOUT_MS = 3000   # wait up to 3s for page JS to settle
+
+# Vision models — tried in order
+GROQ_VISION_MODEL = "llama-3.2-11b-vision-preview"
+NIM_VISION_MODEL  = "meta/llama-3.2-11b-vision-instruct"
+
+
+class VisualTester:
+
+    def __init__(self):
+        """Sets up visual tester."""
+        self.agent_name = "tester"
+
+    def test_html(self, task: dict, code: str) -> tuple[bool, str, str]:
+        """
+        Renders HTML in headless Chromium, screenshots it, sends to vision model.
+
+        Returns:
+            passed (bool)      — True if visual score >= VISUAL_PASS_THRESHOLD
+            reason (str)       — vision model's description + score
+            screenshot_b64 (str) — base64 PNG, empty string if unavailable
+        """
+        tid      = task.get("task_id", "?")
+        filename = task.get("file", "")
+
+        agent_chat.log(
+            self.agent_name,
+            f"Task {tid} — visual test starting for {filename}",
+            task_id=tid,
+        )
+
+        # Step 1: take screenshot
+        screenshot_b64, render_error = self._screenshot_html(code)
+        if render_error:
+            agent_chat.log(
+                self.agent_name,
+                f"Task {tid} — screenshot failed: {render_error} — skipping visual test",
+                task_id=tid,
+            )
+            return True, f"visual test skipped: {render_error}", ""
+
+        # Step 2: vision model judges the screenshot
+        passed, reason = self._judge_screenshot(screenshot_b64, task)
+
+        if passed:
+            agent_chat.log(
+                self.agent_name,
+                f"Task {tid} — VISUAL PASS ✓ — {reason[:80]}",
+                task_id=tid,
+            )
+        else:
+            agent_chat.log(
+                self.agent_name,
+                f"Task {tid} — VISUAL FAIL — {reason[:120]}",
+                message_type="error",
+                task_id=tid,
+            )
+
+        return passed, reason, screenshot_b64
+
+    def _screenshot_html(self, html_code: str) -> tuple[str, str]:
+        """
+        Renders HTML in headless Chromium and returns (base64_png, error_string).
+        error_string is empty on success, contains the error message on failure.
+        """
+        try:
+            from playwright.sync_api import sync_playwright
+        except ImportError:
+            return "", "playwright not installed"
+
+        try:
+            with sync_playwright() as pw:
+                browser = pw.chromium.launch(headless=True)
+                page    = browser.new_page(viewport={
+                    "width":  VIEWPORT_WIDTH,
+                    "height": VIEWPORT_HEIGHT,
+                })
+                # set_content is faster than navigate and works for inline HTML
+                page.set_content(html_code, wait_until="domcontentloaded")
+                # Give JS a moment to run (game loops, animations, etc.)
+                page.wait_for_timeout(SCREENSHOT_TIMEOUT_MS)
+                screenshot_bytes = page.screenshot(full_page=False)
+                browser.close()
+
+            b64 = base64.b64encode(screenshot_bytes).decode("utf-8")
+            return b64, ""
+
+        except Exception as e:
+            return "", str(e)[:200]
+
+    def _judge_screenshot(self, screenshot_b64: str, task: dict) -> tuple[bool, str]:
+        """
+        Sends screenshot to vision model with a structured QA prompt.
+        Returns (passed, detailed_reason).
+        """
+        description     = task.get("description", "")
+        expected_output = task.get("expected_output", "")
+
+        vision_prompt = f"""You are a senior UX/frontend engineer doing a visual QA review.
+You are looking at a screenshot of a web app that was just generated by an AI coder.
+
+WHAT IT WAS SUPPOSED TO BUILD:
+{description}
+
+EXPECTED RESULT:
+{expected_output}
+
+Look at this screenshot carefully. Answer every question:
+
+1. BACKGROUND: What color is the page background? Is it dark (#0e1117 or similar) or light/white?
+2. CONTENT: What do you actually see on screen? Describe every visible element.
+3. LAYOUT: Is the content centered and well-spaced, or does it touch edges/look cramped?
+4. TYPOGRAPHY: Can you see a modern font (not Times New Roman/serif)? Is text readable?
+5. INTERACTIVITY: Are there visible buttons or controls? Do they look styled (colored, rounded)?
+6. COMPLETENESS: Does what you see match what was supposed to be built? What is missing?
+7. PROFESSIONALISM: On a scale of 1-10, does this look like a shipped product or a rough draft?
+   - 1-3: white background, no styling, browser defaults everywhere
+   - 4-6: some styling but clearly incomplete, wrong colors, no dark theme
+   - 7-8: dark theme applied, styled elements, looks reasonable
+   - 9-10: polished, professional, matches spec exactly
+
+For games specifically:
+- Is the canvas visible and dark-themed?
+- Is there a score display?
+- Does it look ready to play?
+
+Respond in this EXACT format:
+VISUAL_SCORE: [1-10]
+BACKGROUND: [color you see]
+ELEMENTS: [list of visible elements]
+MISSING: [what was supposed to be there but is not visible]
+VERDICT: [PASS or FAIL]
+REASON: [one sentence — the most important visual finding]
+"""
+
+        # Try vision models in order
+        result = self._call_vision_model(vision_prompt, screenshot_b64)
+
+        if not result:
+            # Vision model unavailable — pass through with warning
+            return True, "vision model unavailable — visual check skipped"
+
+        return self._parse_vision_response(result)
+
+    def _call_vision_model(self, prompt: str, screenshot_b64: str) -> str | None:
+        """
+        Tries Groq vision, then NIM vision. Returns response text or None.
+        Vision models require messages with image_url content type.
+        """
+        # Try Groq vision first (most likely to be available)
+        result = self._ask_groq_vision(prompt, screenshot_b64)
+        if result:
+            return result
+
+        # Try NIM vision
+        result = self._ask_nim_vision(prompt, screenshot_b64)
+        if result:
+            return result
+
+        return None
+
+    def _ask_groq_vision(self, prompt: str, screenshot_b64: str) -> str | None:
+        """Sends screenshot to Groq llama-3.2-vision model."""
+        try:
+            from api_handler import GROQ_KEY
+            if not GROQ_KEY:
+                return None
+
+            from groq import Groq
+            client = Groq(api_key=GROQ_KEY)
+
+            response = client.chat.completions.create(
+                model    = GROQ_VISION_MODEL,
+                messages = [
+                    {
+                        "role": "user",
+                        "content": [
+                            {
+                                "type": "image_url",
+                                "image_url": {
+                                    "url": f"data:image/png;base64,{screenshot_b64}",
+                                },
+                            },
+                            {
+                                "type": "text",
+                                "text": prompt,
+                            },
+                        ],
+                    }
+                ],
+                max_tokens = 1000,
+            )
+            return response.choices[0].message.content
+
+        except Exception as e:
+            agent_chat.log(
+                "tester",
+                f"Groq vision error: {str(e)[:100]}",
+                message_type="error",
+            )
+            return None
+
+    def _ask_nim_vision(self, prompt: str, screenshot_b64: str) -> str | None:
+        """Sends screenshot to NVIDIA NIM vision model."""
+        try:
+            from api_handler import NIM_KEY
+            if not NIM_KEY:
+                return None
+
+            from openai import OpenAI
+            client = OpenAI(
+                api_key  = NIM_KEY,
+                base_url = "https://integrate.api.nvidia.com/v1",
+            )
+
+            response = client.chat.completions.create(
+                model    = NIM_VISION_MODEL,
+                messages = [
+                    {
+                        "role": "user",
+                        "content": [
+                            {
+                                "type": "image_url",
+                                "image_url": {
+                                    "url": f"data:image/png;base64,{screenshot_b64}",
+                                },
+                            },
+                            {
+                                "type": "text",
+                                "text": prompt,
+                            },
+                        ],
+                    }
+                ],
+                max_tokens = 1000,
+            )
+            return response.choices[0].message.content
+
+        except Exception as e:
+            agent_chat.log(
+                "tester",
+                f"NIM vision error: {str(e)[:100]}",
+                message_type="error",
+            )
+            return None
+
+    def _parse_vision_response(self, response: str) -> tuple[bool, str]:
+        """Parses VISUAL_SCORE and VERDICT from vision model response."""
+        score   = 0
+        verdict = "FAIL"
+        reason  = "No parseable response from vision model"
+        lines   = response.strip().splitlines()
+
+        for line in lines:
+            line = line.strip()
+            if line.startswith("VISUAL_SCORE:"):
+                try:
+                    score = int(line.split(":", 1)[1].strip().split()[0])
+                except Exception:
+                    pass
+            elif line.startswith("VERDICT:"):
+                v = line.split(":", 1)[1].strip().upper()
+                verdict = "PASS" if "PASS" in v else "FAIL"
+            elif line.startswith("REASON:"):
+                reason = line.split(":", 1)[1].strip()
+
+        # Score is authoritative — override parsed VERDICT if score is below threshold
+        if score < VISUAL_PASS_THRESHOLD:
+            verdict = "FAIL"
+
+        # Build a useful reason that includes the score
+        full_reason = f"Visual score {score}/10 — {reason}"
+
+        return verdict == "PASS", full_reason

@@ -1,0 +1,16 @@
+{
+  "cerebras_key": "",
+  "groq_key": "",
+  "mistral_key": "",
+  "use_global_keys": true,
+  "primary_model": "llama-3.3-70b",
+  "backup_model": "llama-3.3-70b-versatile",
+  "max_retries": 3,
+  "poll_interval": 2,
+  "mobile_mode": false,
+  "log_level": "INFO",
+  "auto_sync": true,
+  "coder_rules": true,
+  "notifications": true,
+  "max_parallel_coders": 3
+}

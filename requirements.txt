@@ -1,0 +1,22 @@
+# Core
+flask
+flask-cors
+psutil
+
+# AI Providers
+cerebras-cloud-sdk
+groq
+mistralai
+openai
+
+# App building
+streamlit
+pandas
+matplotlib
+
+# Packaging
+pyinstaller
+
+# Visual testing (headless browser + screenshot)
+playwright
+pillow
